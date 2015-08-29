@@ -9,6 +9,10 @@ Router.map(function() {
   this.route('create');
   this.route('home');
   this.route('join');
+  this.route('active');
+  this.route('accuse');
+  this.route('results');
+  this.route('vote');
 });
 
 export default Router;

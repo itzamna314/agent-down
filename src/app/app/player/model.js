@@ -1,12 +1,12 @@
 import DS from 'ember-data';
 
-var Player = export default DS.Model.extend({
+var Player = DS.Model.extend({
     name: DS.attr('string'),
     isSpy: DS.attr('bool'),
     hasAccused: DS.attr('bool')
 });
 
-Player.repoenClass({
+Player.reopenClass({
   FIXTURES:[
     {
       id: 1,
@@ -28,4 +28,6 @@ Player.repoenClass({
     }
   ]
 });
+
+export default Player;
 

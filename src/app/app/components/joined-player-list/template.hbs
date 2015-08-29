@@ -1,6 +1,11 @@
-<div class="no-players">
-    <div clas="icon"></div>
-    <p>No players have joined</p>
-</div>
+
+{{#each players as |p|}}
+    {{joined-player-list/joined-player player=p}}
+{{else}}
+    <div class="no-players">
+        <div class="icon"></div>
+        <p>No players have joined</p>
+    </div>
+{{/each}}
 
 {{yield}}
