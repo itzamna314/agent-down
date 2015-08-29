@@ -1,3 +1,9 @@
-<h2 id="title">Welcome to Ember</h2>
+<h2 id="title">
+  {{#if showAppName}}
+    Welcome to {{appName}}
+  {{else}}
+    Welcome to EmberJS
+  {{/if}}
+</h2>
 
 {{outlet}}
