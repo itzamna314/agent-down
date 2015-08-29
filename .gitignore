@@ -19,3 +19,8 @@ testem.log
 # go
 /src/server/bin
 /src/server/pkg
+
+# IntelliJ
+.idea
+*.iml
+
