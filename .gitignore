@@ -15,3 +15,7 @@
 /src/app/libpeerconnection.log
 npm-debug.log
 testem.log
+
+# go
+/src/server/bin
+/src/server/pkg
