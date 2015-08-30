@@ -1,5 +1,18 @@
 import DS from 'ember-data';
 
-export default DS.Model.extend({
-  
+var Location = DS.Model.extend({
+    games: DS.hasMany('game'),
+    name: DS.attr('string'),
+    image: DS.attr('string')
 });
+
+Location.reopenClass({
+    FIXTURES:[{
+        id: 1,
+        name: 'beach',
+        image: 'beach'
+    }]
+
+});
+
+export default Location;

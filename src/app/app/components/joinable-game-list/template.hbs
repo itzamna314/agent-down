@@ -1,1 +1,10 @@
+{{#each games as |g|}}
+    {{joinable-game-list/joinable-game game=g}}
+{{else}}
+    <div class="no-games">
+        <div class="icon"></div>
+        <p>Cannot find any games to join</p>
+    </div>
+{{/each}}
+
 {{yield}}
