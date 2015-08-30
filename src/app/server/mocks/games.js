@@ -1,5 +1,6 @@
 module.exports = function(app) {
   var express = require('express');
+  var bodyParser = require('body-parser');
   var gamesRouter = express.Router();
 
   var allGames = [{
@@ -31,7 +32,10 @@ module.exports = function(app) {
   });
 
   gamesRouter.post('/', function(req, res) {
-    res.status(201).end();
+      var body     = req.body;
+      body.game.id = Math.round(Math.random() * 100);
+
+      res.send(body);
   });
 
   gamesRouter.get('/:id', function(req, res) {
@@ -54,5 +58,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/games', gamesRouter);
+  app.use('/api/games', bodyParser.json(), gamesRouter);
 };

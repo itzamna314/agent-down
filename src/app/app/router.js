@@ -6,8 +6,7 @@ var Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route('create');
-  this.route('home');
+  this.route('create', {path: '/create/:game_id'});
   this.route('join');
   this.route('active');
   this.route('accuse');
