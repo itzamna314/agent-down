@@ -8,7 +8,9 @@ var Game = DS.Model.extend({
     createdOn: DS.attr('date'),
     state: DS.attr('string'),
     secondsRemaining: DS.attr('number'),
-    location: DS.belongsTo('location', {async:true})
+    location: DS.belongsTo('location', {async:true}),
+    latitude: DS.attr('number'),
+    longitude: DS.attr('number')
 });
 
 export default Game;

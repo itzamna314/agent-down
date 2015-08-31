@@ -11,7 +11,9 @@ module.exports = function(app) {
       createdOn: '2015-08-30',
       state: 'active',
       secondsRemaining: 420,
-      location: 1
+      location: 1,
+      latitude: null,
+      longitude: null
   }, {
       id: 2,
       spy: null,
@@ -20,7 +22,9 @@ module.exports = function(app) {
       createdOn: '2015-08-31',
       state: 'awaitingPlayers',
       secondsRemaining: null,
-      location: null
+      location: null,
+      latitude: null,
+      longitude: null
   }];
 
   gamesRouter.get('/', function(req, res) {
