@@ -3,17 +3,17 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     needs: ['gameState'],
     actions:{
-        joinGame (game){
+        joinGame: function(game){
             var gameState = this.get('controllers.gameState');
 
             if ( !gameState || !gameState.player ) {
-                this.transition.ToRoute('index');
+                this.transitionToRoute('index');
             }
 
             var self = this;
 
             gameState.joinGame(game, (function(game) {
-                self.transition.ToRoute('create', game);
+                self.transitionToRoute('create', game);
             }));
         }
     }

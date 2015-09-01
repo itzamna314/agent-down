@@ -1,13 +1,9 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
-    needs: ['gameState'],
-    model: function() {
-        var self = this;
-        var g = self.get('controllers.gameState');
-
+    model: function(params) {
         return Ember.RSVP.hash({
-            game: self.get('controllers.gameState').game
+            game: this.store.find('game', params.game_id)
         })
     }
 });

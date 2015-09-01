@@ -38,5 +38,16 @@ export default Ember.Controller.extend({
             self.player = player;
             doneFunc(player);
         });
+    },
+    joinGame: function(game, doneFunc) {
+        var self = this;
+        if ( this.player == null ) {
+            doneFunc();
+        }
+
+        this.player.set('game', game);
+        this.player.save().then(function(){
+            doneFunc(game);
+        });
     }
 });

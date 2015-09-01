@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin'
+import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
 export default Ember.Controller.extend(GeoLocationMixin, {
     needs: ["gameState"],
@@ -7,7 +7,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
         createGame: function() {
             this.get('geolocation').stop();
 
-            this.transition.ToRoute('active');
+            this.transitionToRoute('active');
         }
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){
@@ -17,7 +17,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             this.get('geolocation').getGeoposition().then(function(geoposition) {
                 var gameState = this.get('controllers.gameState');
                 if (!gameState) {
-                    this.transition.ToRoute('index')
+                    this.transitionToRoute('index');
                 }
                 var game = gameState.game;
                 game.latitude = geoposition.coords.latitude;
