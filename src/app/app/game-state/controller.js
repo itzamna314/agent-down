@@ -1,16 +1,18 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
-    game:null,
+    game: null,
+    player: null,
     newGame: function(creatorName, doneFunc) {
         var self = this;
 
-        var creator = this.store.createRecord('player', {
+        this.store.createRecord('player', {
             name: creatorName,
             hasAccused: null,
             isSpy: null
         }).save()
         .then(function(creator){
+            self.player = creator;
             self.game = self.store.createRecord('game', {
                 players:[creator],
                 spy: null,
@@ -23,6 +25,18 @@ export default Ember.Controller.extend({
             });
 
             self.game.save().then(doneFunc);
+        });
+    },
+    initPlayer: function(playerName, doneFunc) {
+        var self = this;
+
+        this.store.createRecord('player', {
+            name: playerName,
+            hasAccused: null,
+            isSpy: null
+        }).save().then(function(player){
+            self.player = player;
+            doneFunc(player);
         });
     }
 });

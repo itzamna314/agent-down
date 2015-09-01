@@ -18,7 +18,7 @@ module.exports = function(app) {
       id: 2,
       spy: null,
       accused: null,
-      creator: 2,
+      creator: 4,
       createdOn: '2015-08-31',
       state: 'awaitingPlayers',
       secondsRemaining: null,
