@@ -1,9 +1,5 @@
 package main
 
-import (
-	"log"
-)
-
 type hub struct {
 	// Registered connections.
 	connections map[*connection]bool

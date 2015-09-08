@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/go-sql-driver/mysql",
+			"repository": "https://github.com/go-sql-driver/mysql",
+			"revision": "3dd7008ac1529aca1bcd8a9db75228a71ba23cac",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/gorilla/websocket",
 			"repository": "https://github.com/gorilla/websocket",
 			"revision": "b6ab76f1fe9803ee1d59e7e5b2a797c1fe897ce5",
