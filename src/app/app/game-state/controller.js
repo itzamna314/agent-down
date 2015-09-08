@@ -40,7 +40,6 @@ export default Ember.Controller.extend({
         });
     },
     joinGame: function(game, doneFunc) {
-        var self = this;
         if ( this.player == null ) {
             doneFunc();
         }

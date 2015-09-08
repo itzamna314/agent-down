@@ -12,7 +12,7 @@ export default Ember.Controller.extend({
         join (){
             var self = this;
             this.get('controllers.gameState').initPlayer(this.get('nickname'), (function(){
-                self.transitionToRoute('join')
+                self.transitionToRoute('join');
             }));
         }
     }

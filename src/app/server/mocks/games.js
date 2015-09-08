@@ -62,5 +62,11 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
+  app.use(function (req, res, next) {
+    console.log('middleware');
+    req.testing = 'testing';
+    return next();
+  });
+
   app.use('/api/games', bodyParser.json(), gamesRouter);
 };
