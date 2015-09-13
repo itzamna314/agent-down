@@ -1,15 +1,19 @@
-package main
+package hub
 
 type joinHub struct {
 	h *hub
 }
 
-var join = joinHub{
+var Join = joinHub{
 	h: makeHub(),
 }
 
+func (j *joinHub) Run() {
+	j.h.run()
+}
+
 func (j *joinHub) cleanup(c *connection) {
-	join.h.unregister <- c
+	j.h.unregister <- c
 	c.ws.Close()
 }
 

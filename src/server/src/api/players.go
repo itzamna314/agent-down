@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"dal"
@@ -8,48 +8,50 @@ import (
 	"strconv"
 )
 
-func serveGames(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Serving games")
+func ServePlayers(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Serving players")
 
-	id := r.URL.Path[len("/api/games"):]
+	id := r.URL.Path[len("/api/players"):]
 	if len(id) > 0 {
 		id = id[1:]
 	}
 
-	gameId, err := strconv.Atoi(id)
+	playerId, err := strconv.Atoi(id)
 
 	switch r.Method {
 	case "GET":
 		if err != nil {
-			findGames(w, r)
+			findPlayers(w, r)
 		} else {
-			fetchGame(w, r, gameId)
+			fetchPlayer(w, r, playerId)
 		}
 	case "POST":
 		if err == nil {
 			http.Error(w, "POST to /id not allowed", 405)
 			return
 		}
-		createGame(w, r)
+		createPlayer(w, r)
 	case "PUT":
 		if err != nil {
 			http.Error(w, "PUT requires id", 405)
 			return
 		}
-		replaceGame(w, r, gameId)
+		replacePlayer(w, r, playerId)
 	case "DELETE":
 		if err != nil {
 			http.Error(w, "DELETE requires id", 405)
 			return
 		}
-		deleteGame(w, r, gameId)
+		deletePlayer(w, r, playerId)
 	default:
 		http.Error(w, fmt.Sprintf("Method %s not recognized", r.Method), 405)
 	}
 }
 
-func findGames(w http.ResponseWriter, r *http.Request) {
+func findPlayers(w http.ResponseWriter, r *http.Request) {
 	db, err := dal.Open()
+	defer db.Close()
+
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to open db: %s", err), 500)
 		return
@@ -79,23 +81,18 @@ func findGames(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func fetchGame(w http.ResponseWriter, r *http.Request, id int) {
+func fetchPlayer(w http.ResponseWriter, r *http.Request, id int) {
 
 }
 
-func createGame(w http.ResponseWriter, r *http.Request) {
-	db, err := dal.Open()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to connect to db: %s", err), 500)
-	}
-
-	_, err = dal.CreateGame(db)
-}
-
-func replaceGame(w http.ResponseWriter, r *http.Request, id int) {
+func createPlayer(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func deleteGame(w http.ResponseWriter, r *http.Request, id int) {
+func replacePlayer(w http.ResponseWriter, r *http.Request, id int) {
+
+}
+
+func deletePlayer(w http.ResponseWriter, r *http.Request, id int) {
 
 }

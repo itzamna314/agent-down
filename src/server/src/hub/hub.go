@@ -1,4 +1,4 @@
-package main
+package hub
 
 type hub struct {
 	// Registered connections.

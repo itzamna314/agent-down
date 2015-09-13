@@ -1,6 +1,8 @@
 package main
 
 import (
+	"api"
+	"hub"
 	"log"
 	"net/http"
 )
@@ -18,19 +20,24 @@ func addDefaultHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
+		log.Print("Serving request")
+
 		fn(w, r)
 	}
 }
 
 func main() {
-	go join.h.run()
-	go create.run()
+	go hub.Join.Run()
+	go hub.Create.Run()
 
-	http.HandleFunc("/ws/join", serveJoin)
-	http.HandleFunc("/ws/create/", serveCreate)
+	http.HandleFunc("/ws/join", hub.ServeJoin)
+	http.HandleFunc("/ws/create/", hub.ServeCreate)
 
-	http.HandleFunc("/api/games", addDefaultHeaders(serveGames))
-	http.HandleFunc("/api/games/", addDefaultHeaders(serveGames))
+	http.HandleFunc("/api/games", addDefaultHeaders(api.ServeGames))
+	http.HandleFunc("/api/games/", addDefaultHeaders(api.ServeGames))
+
+	http.HandleFunc("/api/players", addDefaultHeaders(api.ServePlayers))
+	http.HandleFunc("/api/players/", addDefaultHeaders(api.ServePlayers))
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

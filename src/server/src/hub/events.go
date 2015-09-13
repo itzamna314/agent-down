@@ -1,4 +1,4 @@
-package main
+package hub
 
 import (
 	"log"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func serveJoin(w http.ResponseWriter, r *http.Request) {
+func ServeJoin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -17,12 +17,12 @@ func serveJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	join.h.register <- c
+	Join.h.register <- c
 	go c.writePump()
-	c.readPump(join.cleanup, join.handle)
+	c.readPump(Join.cleanup, Join.handle)
 }
 
-func serveCreate(w http.ResponseWriter, r *http.Request) {
+func ServeCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -43,8 +43,8 @@ func serveCreate(w http.ResponseWriter, r *http.Request) {
 
 	c := &connection{send: make(chan []byte, 256), ws: ws}
 	gc := &gameConnection{connection: c, gameId: gameId}
-	create.register <- gc
+	Create.register <- gc
 
 	go c.writePump()
-	c.readPump(create.cleanup, create.handle)
+	c.readPump(Create.cleanup, Create.handle)
 }

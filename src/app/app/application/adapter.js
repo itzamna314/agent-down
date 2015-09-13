@@ -6,7 +6,7 @@ var extendObj = {
     namespace: '/api'
 };
 
-if (ENV.environment == 'production' ) {
+if (ENV.environment === 'production' ) {
     extendObj.host = 'http://localhost:8080';
     extendObj.namespace = 'api';
 }

@@ -1,4 +1,4 @@
-package main
+package hub
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ type gameMessage struct {
 	message []byte
 }
 
-var create = createHub{
+var Create = createHub{
 	games:       make(map[int]*hub),
 	connections: make(map[*connection]int),
 	register:    make(chan *gameConnection),
@@ -34,7 +34,7 @@ var create = createHub{
 	broadcast:   make(chan *gameMessage),
 }
 
-func (h *createHub) run() {
+func (h *createHub) Run() {
 	for {
 		select {
 		case g := <-h.register:
@@ -107,7 +107,7 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 // Broadcast to join hub
 func (h *createHub) handleCreated(data *CreateData) {
 	if b, err := json.Marshal(data); err == nil {
-		join.h.broadcast <- b
+		Join.h.broadcast <- b
 	} else {
 		log.Println(err)
 	}
