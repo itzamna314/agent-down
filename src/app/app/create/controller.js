@@ -2,7 +2,7 @@ import Ember from 'ember';
 import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
 export default Ember.Controller.extend(GeoLocationMixin, {
-    needs: ["gameState"],
+    gameState: Ember.inject.service('game-state'),
     socketService: Ember.inject.service('websockets'),
     actions: {
         createGame: function() {
@@ -16,7 +16,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             this.get('geolocation').start();
 
             this.get('geolocation').getGeoposition().then(function(pos) {
-                var gameState = this.get('controllers.gameState');
+                var gameState = this.get('gameState');
                 if (!gameState) {
                     this.transitionToRoute('index');
                 }

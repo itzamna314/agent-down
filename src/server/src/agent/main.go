@@ -20,8 +20,6 @@ func addDefaultHeaders(fn http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		log.Print("Serving request")
-
 		fn(w, r)
 	}
 }
