@@ -1,3 +1,5 @@
+drop schema if exists `agent`;
+
 CREATE SCHEMA if not exists `agent` ;
 
 use `agent`;
@@ -42,5 +44,8 @@ create table if not exists game(
     modifiedOn datetime null,
     modifiedBy nvarchar(255) null
 );
+
+alter table player
+add constraint foreign key (gameId) references game (id);
     
 

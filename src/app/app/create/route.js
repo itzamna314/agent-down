@@ -17,9 +17,9 @@ export default Ember.Route.extend({
     },
     afterModel: function(game, transition) {
 
-        // Pre-load the comments
+        // Pre-load the players
         // The 'get' call will result in an AJAX call to get
-        // the comments and returns a promise
+        // the players and returns a promise
         Ember.RSVP.makePromise(game.get('players')).then(function(players){
             game.reload();
         });

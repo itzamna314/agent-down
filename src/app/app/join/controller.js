@@ -3,6 +3,7 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     socketService: Ember.inject.service('websockets'),
+    socket: null,
     init: function(){
         this._super.apply(this, arguments);
         var socket = this.get('socketService').socketFor('ws://localhost:8080/ws/join');
@@ -17,6 +18,8 @@ export default Ember.Controller.extend({
         socket.on('close', function() {
             console.log('socket closed');
         }, this);
+
+        this.set('socket', socket);
     },
     actions:{
         joinGame: function(game){
@@ -30,6 +33,7 @@ export default Ember.Controller.extend({
 
             gameState.joinGame(this.store, game, (function(game) {
                 if (!game) { self.transitionToRoute('index'); }
+                self.get('socket').close();
                 self.transitionToRoute('create', game);
             }));
         }

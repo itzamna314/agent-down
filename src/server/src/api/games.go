@@ -62,7 +62,7 @@ func ServeGames(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "PUT requires id", 405)
 			return
 		}
-		replaceGame(w, r, gameId)
+		replaceGame(w, db, b, gameId)
 	case "DELETE":
 		if idErr != nil {
 			http.Error(w, "DELETE requires id", 405)
@@ -171,23 +171,7 @@ func createGame(w http.ResponseWriter, db *sql.DB, b []byte) {
 	w.Write(j)
 }
 
-func replaceGame(w http.ResponseWriter, r *http.Request, id int) {
-	db, err := dal.Open()
-	if err != nil {
-		log.Printf("Failed to connect to db: %s\n", err)
-		http.Error(w, "failed to create game", 500)
-		return
-	}
-	defer db.Close()
-
-	b, err := ioutil.ReadAll(r.Body)
-
-	if err != nil {
-		log.Printf("Failed to read body %v\n", r.Body)
-		http.Error(w, "Could not read body", 400)
-		return
-	}
-
+func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	var body gameRequest
 
 	if err := json.Unmarshal(b, &body); err != nil {

@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 )
 
 type createHub struct {
@@ -87,10 +88,21 @@ type CreateData struct {
 	Longitude float64
 }
 
+type GameData struct {
+	Command  string `json:"command"`
+	PlayerId int64  `json:"playerId"`
+}
+
 func (h *createHub) handle(c *connection, msg []byte, t int) {
 	var command GameCommand
 	if err := json.Unmarshal(msg, &command); err != nil {
 		log.Println(err)
+		return
+	}
+
+	gameId, ok := Create.connections[c]
+	if !ok {
+		log.Println("Connection was not registered")
 		return
 	}
 
@@ -101,6 +113,30 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			Longitude: command.Data["longitude"].(float64),
 		}
 		h.handleCreated(&d)
+	case "joined":
+		log.Println("Handling join")
+		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		if err != nil {
+			log.Println("Illegal player id: %s\n", i)
+			return
+		}
+
+		d := GameData{
+			Command:  "joined",
+			PlayerId: int64(i),
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Println("Failed to marshall data: %v\n", d)
+			return
+		}
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		h.broadcast <- &msg
 	}
 }
 
