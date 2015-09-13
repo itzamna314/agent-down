@@ -19,18 +19,19 @@ export default Ember.Controller.extend({
         }, this);
     },
     actions:{
-        joinGame: function(/*game*/){
+        joinGame: function(game){
             var gameState = this.get('gameState');
 
             if ( !gameState || !gameState.player ) {
                 this.transitionToRoute('index');
             }
 
-            //var self = this;
+            var self = this;
 
-            /*gameState.joinGame(game, (function(game) {
+            gameState.joinGame(this.store, game, (function(game) {
+                if (!game) { self.transitionToRoute('index'); }
                 self.transitionToRoute('create', game);
-            }));*/
+            }));
         }
     },
     willDestroy() {

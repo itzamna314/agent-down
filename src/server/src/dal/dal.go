@@ -3,6 +3,7 @@ package dal
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"strconv"
 )
 
 func Open() (db *sql.DB, err error) {
@@ -49,4 +50,11 @@ func NullBool(b *bool) *sql.NullBool {
 		Valid: true,
 		Bool:  *b,
 	}
+}
+
+func IntsToStrings(i []int64) (ret []string) {
+	for _, v := range i {
+		ret = append(ret, strconv.Itoa(int(v)))
+	}
+	return
 }

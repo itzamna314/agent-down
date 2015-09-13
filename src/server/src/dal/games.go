@@ -5,9 +5,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func CreateGame(db *sql.DB) (*Game, error) {
+func CreateGame(db *sql.DB, g *Game) (*Game, error) {
 	result, err := db.Exec(
-		"INSERT INTO game(createdBy) VALUES (?)",
+		"INSERT INTO game(state, createdBy) VALUES (?, ?)",
+		g.State,
 		"dal:CreateGame()",
 	)
 
@@ -26,11 +27,30 @@ func CreateGame(db *sql.DB) (*Game, error) {
 
 func FetchGame(db *sql.DB, id int64) (*Game, error) {
 	g := newGameDto()
-	row := db.QueryRow("SELECT id, locationId, state, secondsRemaining, latitude, longitude  FROM game WHERE id = ?", id)
-	err := row.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude)
+	row := db.QueryRow(`SELECT id
+		                     , locationId
+		                     , state
+		                     , secondsRemaining
+		                     , latitude
+		                     , longitude
+		                     , creatorId
+		                     , spyId
+		                     , accuserId
+		                     , accusedId 
+		                  FROM game 
+		                 WHERE id = ?`,
+		id)
+	err := row.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accuserId, g.accusedId)
 	if err != nil {
 		return nil, err
 	}
+
+	players, err := FindGamePlayers(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	g.playerIds = players
 
 	return g.ToGame(), nil
 }
@@ -41,7 +61,19 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 		return FindAllGames(db)
 	}
 
-	rows, err := db.Query("SELECT id, locationId, state, secondsRemaining, latitude, longitude FROM game WHERE state = ?", state)
+	rows, err := db.Query(`SELECT id
+		                     , locationId
+		                     , state
+		                     , secondsRemaining
+		                     , latitude
+		                     , longitude
+		                     , creatorId
+		                     , spyId
+		                     , accuserId
+		                     , accusedId 
+		                  FROM game 
+		                  WHERE state = ?`,
+		state)
 
 	if err != nil {
 		return nil, err
@@ -54,7 +86,7 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 	for rows.Next() {
 		g := newGameDto()
 
-		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude)
+		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accuserId, g.accusedId)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +98,18 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 }
 
 func FindAllGames(db *sql.DB) ([]*Game, error) {
-	rows, err := db.Query("SELECT id, locationId, state, secondsRemaining, latitude, longitude FROM game")
+	rows, err := db.Query(`SELECT id
+		                     , locationId
+		                     , state
+		                     , secondsRemaining
+		                     , latitude
+		                     , longitude
+		                     , creatorId
+		                     , spyId
+		                     , accuserId
+		                     , accusedId 
+		                  FROM game 
+		                  WHERE state = ?`)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +120,7 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 
 	for rows.Next() {
 		g := newGameDto()
-		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude)
+		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accuserId, g.accusedId)
 		if err != nil {
 			return nil, err
 		}

@@ -6,9 +6,12 @@ export default Ember.Controller.extend(GeoLocationMixin, {
     socketService: Ember.inject.service('websockets'),
     actions: {
         createGame: function() {
-            this.get('geolocation').stop();
+            var p = this.get('model').reload();
+            console.log(p);
 
-            this.transitionToRoute('active');
+            /*this.get('geolocation').stop();
+
+            this.transitionToRoute('active');*/
         }
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){

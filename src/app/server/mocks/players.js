@@ -44,9 +44,9 @@ module.exports = function(app) {
 
   playersRouter.get('/:id', function(req, res) {
     res.send({
-      'players': allPlayers.filter((function(p){
+      'player': allPlayers.filter((function(p){
             return p.id == req.params.id;
-        }))
+        }))[0]
     });
   });
 

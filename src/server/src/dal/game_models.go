@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+type PlayerId struct {
+}
+
 type Game struct {
 	Id               *string  `json:"id"`
 	LocationId       *int64   `json:"locationId"`
@@ -16,6 +19,7 @@ type Game struct {
 	Spy              *int64   `json:"spy,string"`
 	Accuser          *int64   `json:"accuser,string"`
 	Accused          *int64   `json:"accused,string"`
+	PlayerIds        []string `json:"players"`
 }
 
 type gameDto struct {
@@ -29,6 +33,7 @@ type gameDto struct {
 	spyId            *sql.NullInt64
 	accuserId        *sql.NullInt64
 	accusedId        *sql.NullInt64
+	playerIds        []int64
 }
 
 func newGameDto() *gameDto {
@@ -43,6 +48,7 @@ func newGameDto() *gameDto {
 		spyId:            new(sql.NullInt64),
 		accuserId:        new(sql.NullInt64),
 		accusedId:        new(sql.NullInt64),
+		playerIds:        nil,
 	}
 }
 
@@ -59,5 +65,6 @@ func (g *gameDto) ToGame() *Game {
 		Spy:              IntOrNull(g.spyId),
 		Accuser:          IntOrNull(g.accuserId),
 		Accused:          IntOrNull(g.accusedId),
+		PlayerIds:        IntsToStrings(g.playerIds),
 	}
 }

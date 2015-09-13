@@ -46,22 +46,22 @@ export default Ember.Service.extend({
             });*/
         });
     },
-    initPlayer: function(playerName, doneFunc) {
+    initPlayer: function(store, playerName, doneFunc) {
         var self = this;
 
-        this.store.createRecord('player', {
-            name: playerName,
-            hasAccused: null,
-            isSpy: null
+        store.createRecord('player', {
+            name: playerName
         }).save().then(function(player){
             self.player = player;
             doneFunc(player);
         });
     },
-    joinGame: function(game, doneFunc) {
+    joinGame: function(store, game, doneFunc) {
         if ( this.player == null ) {
             doneFunc();
         }
+
+        console.log(game);
 
         this.player.set('game', game);
         this.player.save().then(function(){

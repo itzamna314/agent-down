@@ -11,7 +11,7 @@ export default Ember.Controller.extend({
         },
         join (){
             var self = this;
-            this.get('gameState').initPlayer(this.get('nickname'), (function(){
+            this.get('gameState').initPlayer(this.store, this.get('nickname'), (function(){
                 self.transitionToRoute('join');
             }));
         }

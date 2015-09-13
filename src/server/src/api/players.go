@@ -2,6 +2,7 @@ package api
 
 import (
 	"dal"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,29 +25,45 @@ func ServePlayers(w http.ResponseWriter, r *http.Request) {
 		id = id[1:]
 	}
 
-	playerId, err := strconv.Atoi(id)
+	playerId, idErr := strconv.Atoi(id)
+
+	db, err := dal.Open()
+	if err != nil {
+		log.Printf("Failed to connect to db: %s\n", err)
+		http.Error(w, "failed to create game", 500)
+		return
+	}
+	defer db.Close()
+
+	b, err := ioutil.ReadAll(r.Body)
+
+	if err != nil && r.Method != "GET" {
+		log.Printf("Failed to read body %v\n", r.Body)
+		http.Error(w, "Could not read body", 400)
+		return
+	}
 
 	switch r.Method {
 	case "GET":
-		if err != nil {
+		if idErr != nil {
 			findPlayers(w, r)
 		} else {
 			fetchPlayer(w, r, playerId)
 		}
 	case "POST":
-		if err == nil {
+		if idErr == nil {
 			http.Error(w, "POST to /id not allowed", 405)
 			return
 		}
-		createPlayer(w, r)
+		createPlayer(w, db, b)
 	case "PUT":
-		if err != nil {
+		if idErr != nil {
 			http.Error(w, "PUT requires id", 405)
 			return
 		}
-		replacePlayer(w, r, playerId)
+		replacePlayer(w, db, b, playerId)
 	case "DELETE":
-		if err != nil {
+		if idErr != nil {
 			http.Error(w, "DELETE requires id", 405)
 			return
 		}
@@ -85,11 +102,8 @@ func findPlayers(w http.ResponseWriter, r *http.Request) {
 }
 
 func fetchPlayer(w http.ResponseWriter, r *http.Request, id int) {
-
-}
-
-func createPlayer(w http.ResponseWriter, r *http.Request) {
 	db, err := dal.Open()
+
 	if err != nil {
 		log.Printf("Failed to open db: %s\n", err)
 		http.Error(w, "Failed to connect to db", 500)
@@ -98,14 +112,28 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	b, err := ioutil.ReadAll(r.Body)
+	player, err := dal.FetchPlayer(db, int64(id))
 
 	if err != nil {
-		log.Printf("Failed to read body %v\n", r.Body)
-		http.Error(w, "Could not read body", 400)
+		http.Error(w, fmt.Sprintf("Failed to query db: %s", err), 500)
 		return
 	}
 
+	resp := playerRequest{
+		Player: *player,
+	}
+
+	j, err := json.Marshal(resp)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal to json: %v", resp), 500)
+		return
+	}
+
+	w.Write(j)
+}
+
+func createPlayer(w http.ResponseWriter, db *sql.DB, b []byte) {
 	var body playerRequest
 
 	if err := json.Unmarshal(b, &body); err != nil {
@@ -113,11 +141,6 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not parse body", 400)
 		return
 	}
-
-	log.Printf("Body: %s\n", b)
-
-	log.Printf("IsCreator: %v\n", body.Player.IsCreator)
-	log.Printf("IsCreator: %v\n", *body.Player.IsCreator)
 
 	player, err := dal.CreatePlayer(db, &body.Player)
 
@@ -140,8 +163,36 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func replacePlayer(w http.ResponseWriter, r *http.Request, id int) {
+func replacePlayer(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
+	var body playerRequest
 
+	if err := json.Unmarshal(b, &body); err != nil {
+		log.Printf("Failed to unmarshal body %s\n", b)
+		http.Error(w, "Could not read body", 400)
+		return
+	}
+
+	p, err := dal.ReplacePlayer(db, int64(id), &body.Player)
+
+	if err != nil {
+		log.Printf("Failed to create player: %s\n", err)
+		http.Error(w, "Failed to create player", 500)
+		return
+	}
+
+	resp := playersRequest{
+		Players: []dal.Player{*p},
+	}
+
+	j, err := json.Marshal(resp)
+
+	if err != nil {
+		log.Printf("Failed to marshal to json: %v\n", resp)
+		http.Error(w, "Failed to serialize player", 500)
+		return
+	}
+
+	w.Write(j)
 }
 
 func deletePlayer(w http.ResponseWriter, r *http.Request, id int) {

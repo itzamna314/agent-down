@@ -29,6 +29,29 @@ func FindAllPlayers(db *sql.DB) ([]*Player, error) {
 	return players, nil
 }
 
+func FindGamePlayers(db *sql.DB, gameId int64) ([]int64, error) {
+	rows, err := db.Query("SELECT id FROM player WHERE gameId=?", gameId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var ids []int64
+
+	for rows.Next() {
+		id := new(int64)
+		err := rows.Scan(id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, *id)
+	}
+
+	return ids, nil
+}
+
 func CreatePlayer(db *sql.DB, p *Player) (*Player, error) {
 	if len(*p.Name) == 0 {
 		return nil, errors.New("Player name is required")
@@ -64,4 +87,25 @@ func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
 	}
 
 	return dto.ToPlayer(), nil
+}
+
+func ReplacePlayer(db *sql.DB, id int64, p *Player) (*Player, error) {
+	_, err := db.Exec(`UPDATE player 
+	  	                  SET name = ?
+		                    , gameId = ?
+		                    , isSpy = ?
+		                    , isBeingAccused = ?
+		                    , isCreator = ?
+		                    , hasAccused = ?
+		                    , modifiedOn = CURRENT_TIMESTAMP
+		                    , modifiedBy = ?
+		                WHERE id = ?`,
+		p.Name, p.GameId, p.IsSpy, p.IsBeingAccused, p.IsCreator, p.HasAccused, "dal:ReplacePlayer()", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return FetchPlayer(db, id)
+
 }

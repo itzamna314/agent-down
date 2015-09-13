@@ -44,8 +44,9 @@ module.exports = function(app) {
 
   gamesRouter.get('/:id', function(req, res) {
     res.send({
-      'games': {
-        id: req.params.id
+      'game': {
+          id: req.params.id,
+          players: [1,3]
       }
     });
   });
