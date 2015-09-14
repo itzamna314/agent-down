@@ -12,6 +12,7 @@ Ember.RSVP.makePromise = function(maybePromise) {
 };
 
 export default Ember.Route.extend({
+    gameState: Ember.inject.service('game-state'),
     model: function(params) {
         return this.store.find('game', params.game_id)
     },
@@ -22,6 +23,11 @@ export default Ember.Route.extend({
         // the players and returns a promise
         Ember.RSVP.makePromise(game.get('players')).then(function(players){
             game.reload();
-        });
+
+            var gs = this.get('gameState');
+
+            gs.set('game', game);
+            gs.initSocket(game.get('id'));
+        }.bind(this));
     }
 });

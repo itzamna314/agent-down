@@ -142,6 +142,12 @@ func createPlayer(w http.ResponseWriter, db *sql.DB, b []byte) {
 		return
 	}
 
+	if body.Player.Name == nil {
+		log.Printf("Bad request: missing name")
+		http.Error(w, "Name is required", 400)
+		return
+	}
+
 	player, err := dal.CreatePlayer(db, &body.Player)
 
 	if err != nil {

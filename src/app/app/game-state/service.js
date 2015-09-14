@@ -1,80 +1,36 @@
 import Ember from 'ember';
 
+import ENV from 'agent-down/config/environment';
+import Storage from 'agent-down/game-state/model';
+
 export default Ember.Service.extend({
     game: null,
     player: null,
-    socket: null,
+    cache: Storage.create(),
     socketService: Ember.inject.service('websockets'),
-    newGame: function(store, creatorName, doneFunc) {
-        var self = this;
+    socketHost: '',
+    socketInitialized: false,
+    init: function() {
+        this._super.apply(this, arguments);
 
-        var game = store.createRecord('game', {
-            createdOn: '08/30/2015',
-            state: 'awaitingPlayers'
-        });
-
-        var gamePromise = game.save();
-
-        gamePromise.then(function(game) {
-            var player = store.createRecord('player', {
-                game: game,
-                name: creatorName,
-                isCreator: true,
-                hasAccused: null,
-                isSpy: null
-            });
-
-            player.save().then(function(player){
-                self.createSocket(game.get('id'));
-
-                game.set('creator', player);
-
-                game.save().then(function(game){
-                    self.game = game;
-                    doneFunc(game);
-                });
-            });
-        });
-
-
+        if (ENV.environment == 'production') {
+            this.set('socketHost', 'ws://agentdown.com/ws/')
+        } else {
+            this.set('socketHost', 'ws://localhost:8080/ws/')
+        }
     },
-    initPlayer: function(store, playerName, doneFunc) {
-        var self = this;
-
-        store.createRecord('player', {
-            name: playerName
-        }).save().then(function(player){
-            self.player = player;
-            doneFunc(player);
-        });
-    },
-    joinGame: function(store, game, doneFunc) {
-        if ( this.player == null ) {
-            doneFunc();
+    initSocket: function(id, onOpen){
+        if ( this.get('socketInitialized') ) {
+            if ( onOpen ) { onOpen(); }
             return;
         }
 
-        var self = this;
+        var socketUrl = this.get('socketHost') + 'create/' + id;
 
-        this.player.set('game', game);
-        this.player.save().then(function(){
-            self.createSocket(game.get('id'), function(sock){
-                self.sendSocket({
-                    name: "joined",
-                    data: {
-                        playerId: self.player.get('id')
-                    }
-                })
-            });
-            doneFunc(game);
-        });
-    },
-    createSocket: function(id, onOpen){
-        var socket = this.get('socketService').socketFor('ws://localhost:8080/ws/create/' + id);
+        var socket = this.get('socketService').socketFor(socketUrl);
 
         socket.on('open', function(){
-            onOpen && onOpen(socket);
-            console.log('socket opened');
+            if( onOpen ){ onOpen(); }
         }, this);
         socket.on('message', function(event){
             var d = JSON.parse(event.data);
@@ -89,10 +45,79 @@ export default Ember.Service.extend({
             console.log('socket closed');
         }, this);
 
-        this.set('socket', socket);
+        this.set('socketInitialized', true);
+    },
+    newGame: function(store, creatorName, doneFunc) {
+        var game = store.createRecord('game', {
+            createdOn: '08/30/2015',
+            state: 'awaitingPlayers'
+        });
+
+        game.then(function(game) {
+            this.set('game', game);
+            this.set('cache.gameId', game.get('id'));
+
+            var player = store.createRecord('player', {
+                game: game,
+                name: creatorName,
+                isCreator: true,
+                hasAccused: null,
+                isSpy: null
+            });
+
+            player.save().then(function(player){
+                this.set('player', player);
+                this.set('cache.playerId', player.get('id'));
+
+                this.initSocket(game.get('id'));
+
+                game.set('creator', player);
+                game.save().then(function(game){
+                    doneFunc(game);
+                }.bind(this));
+            }.bind(this));
+        }.bind(this));
+
+
+    },
+    initPlayer: function(store, playerName, doneFunc) {
+        store.createRecord('player', {
+            name: playerName
+        }).save().then(function(player){
+            this.set('player', player);
+            this.set('cache.playerId', player.get('id'));
+            doneFunc(player);
+        }.bind(this));
+    },
+    joinGame: function(store, game, doneFunc) {
+        if ( this.player == null || game == null) {
+            doneFunc();
+            return;
+        }
+
+        this.set('game', game);
+        this.set('cache.gameId', game.get('id'));
+
+        this.player.set('game', game);
+        this.player.save().then(function(){
+            this.initSocket(game.get('id'), function(){
+                this.sendSocket({
+                    name: "joined",
+                    data: {
+                        playerId: this.player.get('id')
+                    }
+                });
+            }.bind(this));
+            doneFunc(game);
+        }.bind(this));
     },
     sendSocket: function(msg) {
-        var socket = this.get('socket');
+        var game = this.get('game');
+        if ( !game ) { return; }
+
+        var socketUrl = this.get('socketHost') + 'create/' + game.get('id');
+        var socket = this.get('socketService').socketFor(socketUrl);
+
         socket.send(JSON.stringify(msg));
     },
     setGeoPosition: function(coordinates){

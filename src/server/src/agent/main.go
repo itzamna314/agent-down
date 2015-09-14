@@ -2,6 +2,9 @@ package main
 
 import (
 	"api"
+	"dal"
+	"flag"
+	"fmt"
 	"hub"
 	"log"
 	"net/http"
@@ -24,9 +27,22 @@ func addDefaultHeaders(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func helloWorld(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("hello world"))
+}
+
 func main() {
+	port := flag.Int("port", 8080, "Specify which port to serve")
+	conn := flag.String("conn", "WebClient@tcp(localhost:3306)/agent", "MySql connection string")
+	flag.Parse()
+
+	dal.Init(conn)
+
 	go hub.Join.Run()
 	go hub.Create.Run()
+
+	fs := http.FileServer(http.Dir("www"))
+	http.Handle("/", fs)
 
 	http.HandleFunc("/ws/join", hub.ServeJoin)
 	http.HandleFunc("/ws/create/", hub.ServeCreate)
@@ -37,7 +53,7 @@ func main() {
 	http.HandleFunc("/api/players", addDefaultHeaders(api.ServePlayers))
 	http.HandleFunc("/api/players/", addDefaultHeaders(api.ServePlayers))
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

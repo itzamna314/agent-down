@@ -7,6 +7,9 @@ var extendObj = {
 };
 
 if (ENV.environment === 'production' ) {
+    extendObj.host = 'http://52.24.227.145';
+    extendObj.namespace = 'api';
+} else if (ENV.environment === 'local' ) {
     extendObj.host = 'http://localhost:8080';
     extendObj.namespace = 'api';
 }

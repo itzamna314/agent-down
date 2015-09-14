@@ -6,7 +6,10 @@ export default Ember.Controller.extend({
     socket: null,
     init: function(){
         this._super.apply(this, arguments);
-        var socket = this.get('socketService').socketFor('ws://localhost:8080/ws/join');
+        var gs = this.get('gameState');
+        var socketAddress = gs.get('socketHost') + 'join';
+
+        var socket = this.get('socketService').socketFor(socketAddress);
 
         socket.on('open', function(){
             console.log('socket opened');
@@ -29,13 +32,11 @@ export default Ember.Controller.extend({
                 this.transitionToRoute('index');
             }
 
-            var self = this;
-
             gameState.joinGame(this.store, game, (function(game) {
-                if (!game) { self.transitionToRoute('index'); }
-                self.get('socket').close();
-                self.transitionToRoute('create', game);
-            }));
+                if (!game) { this.transitionToRoute('index'); }
+                this.get('socket').close();
+                this.transitionToRoute('create', game);
+            }).bind(this));
         }
     },
     willDestroy() {

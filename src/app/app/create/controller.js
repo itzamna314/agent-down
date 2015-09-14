@@ -3,7 +3,6 @@ import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
 export default Ember.Controller.extend(GeoLocationMixin, {
     gameState: Ember.inject.service('game-state'),
-    socket: null,
     actions: {
         createGame: function() {
 

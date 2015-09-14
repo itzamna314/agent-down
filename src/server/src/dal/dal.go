@@ -6,8 +6,14 @@ import (
 	"strconv"
 )
 
+var conn string
+
+func Init(c *string) {
+	conn = *c
+}
+
 func Open() (db *sql.DB, err error) {
-	db, err = sql.Open("mysql", "WebClient@tcp(localhost:3306)/agent")
+	db, err = sql.Open("mysql", conn)
 	return
 }
 
