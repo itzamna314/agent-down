@@ -1,5 +1,16 @@
 import Ember from 'ember';
 
+// Returns in miles
+function dist(lat1, lon1, lat2, lon2) {
+    var dlon = lon2 - lon1;
+    var dlat = lat2 - lat1;
+    var a = Math.pow(Math.sin(dlat/2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon/2), 2);
+    var c = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1-a) );
+    return 3959 * c;
+}
+
+var threshold = 1;
+
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     socketService: Ember.inject.service('websockets'),
@@ -15,11 +26,16 @@ export default Ember.Controller.extend({
             console.log('socket opened');
         }, this);
         socket.on('message', function(event){
-            console.log(event);
-            console.log(JSON.stringify(event.data));
-        }, this);
+            var d = JSON.parse(event.data);
+
+            var geoPos = this.get('model.geoPosition');
+
+            if ( dist(d.latitude, d.longitude, geoPos.latitude, geoPos.longitude) < threshold) {
+                this.send('updateGames');
+            }
+        }.bind(this), this);
         socket.on('close', function() {
-            console.log('socket closed');
+
         }, this);
 
         this.set('socket', socket);

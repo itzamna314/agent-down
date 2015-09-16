@@ -41,8 +41,12 @@ func main() {
 	go hub.Join.Run()
 	go hub.Create.Run()
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "www/index.html")
+	})
+
 	fs := http.FileServer(http.Dir("www"))
-	http.Handle("/", fs)
+	http.Handle("/assets/", fs)
 
 	http.HandleFunc("/ws/join", hub.ServeJoin)
 	http.HandleFunc("/ws/create/", hub.ServeCreate)

@@ -84,8 +84,8 @@ type GameCommand struct {
 }
 
 type CreateData struct {
-	Latitude  float64
-	Longitude float64
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 type GameData struct {
@@ -97,6 +97,7 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 	var command GameCommand
 	if err := json.Unmarshal(msg, &command); err != nil {
 		log.Println(err)
+		log.Printf("String: %s\n", msg)
 		return
 	}
 

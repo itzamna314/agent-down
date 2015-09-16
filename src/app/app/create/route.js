@@ -16,8 +16,7 @@ export default Ember.Route.extend({
     model: function(params) {
         return this.store.find('game', params.game_id)
     },
-    afterModel: function(game, transition) {
-
+    afterModel: function(game /*, transition*/) {
         // Pre-load the players
         // The 'get' call will result in an AJAX call to get
         // the players and returns a promise

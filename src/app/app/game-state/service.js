@@ -1,14 +1,14 @@
 import Ember from 'ember';
 
 import ENV from 'agent-down/config/environment';
-import Storage from 'agent-down/game-state/model';
+import Cache from 'agent-down/game-state/model';
 
 export default Ember.Service.extend({
     game: null,
     player: null,
-    cache: Storage.create(),
+    cache: Cache.create(),
     socketService: Ember.inject.service('websockets'),
-    socketHost: '',
+    socket: null,
     socketInitialized: false,
     init: function() {
         this._super.apply(this, arguments);
@@ -30,6 +30,8 @@ export default Ember.Service.extend({
         var socket = this.get('socketService').socketFor(socketUrl);
 
         socket.on('open', function(){
+            this.set('socketInitialized', true);
+            this.set('socket', socket);
             if( onOpen ){ onOpen(); }
         }, this);
         socket.on('message', function(event){
@@ -42,10 +44,8 @@ export default Ember.Service.extend({
             }
         }, this);
         socket.on('close', function() {
-            console.log('socket closed');
-        }, this);
 
-        this.set('socketInitialized', true);
+        }, this);
     },
     newGame: function(store, creatorName, doneFunc) {
         var game = store.createRecord('game', {
@@ -53,7 +53,9 @@ export default Ember.Service.extend({
             state: 'awaitingPlayers'
         });
 
-        game.then(function(game) {
+        console.log(game);
+
+        game.save().then(function(game) {
             this.set('game', game);
             this.set('cache.gameId', game.get('id'));
 
@@ -112,13 +114,22 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     sendSocket: function(msg) {
-        var game = this.get('game');
-        if ( !game ) { return; }
+        if ( !this.get('socketInitialized') )
+        {
+            this.initSocket(sendSocket.bind(this, msg));
+        }
 
-        var socketUrl = this.get('socketHost') + 'create/' + game.get('id');
-        var socket = this.get('socketService').socketFor(socketUrl);
+        var socket = this.get('socket');
 
-        socket.send(JSON.stringify(msg));
+        if (this.get('socketService').websocketIsNotClosed(socket)) {
+            socket.send(JSON.stringify(msg));
+        } else {
+            socket.reconnect();
+            socket.on('open', function(){
+                socket.send(JSON.stringify(msg));
+                socket.off('open', this);
+            });
+        }
     },
     setGeoPosition: function(coordinates){
         var game = this.get('game');
@@ -129,8 +140,8 @@ export default Ember.Service.extend({
             this.sendSocket({
                 name: "created",
                 data: {
-                    latitude: game.latitude,
-                    longitude: game.longitude
+                    latitude: coordinates.latitude,
+                    longitude:  coordinates.longitude
                 }
             });
         }.bind(this));
