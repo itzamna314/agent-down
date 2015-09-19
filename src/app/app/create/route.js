@@ -14,13 +14,13 @@ Ember.RSVP.makePromise = function(maybePromise) {
 export default Ember.Route.extend({
     gameState: Ember.inject.service('game-state'),
     model: function(params) {
-        return this.store.find('game', params.game_id)
+        return this.store.find('game', params.game_id);
     },
     afterModel: function(game /*, transition*/) {
         // Pre-load the players
         // The 'get' call will result in an AJAX call to get
         // the players and returns a promise
-        Ember.RSVP.makePromise(game.get('players')).then(function(players){
+        return Ember.RSVP.makePromise(game.get('players')).then(function(/*players*/){
             game.reload();
 
             var gs = this.get('gameState');

@@ -13,10 +13,10 @@ export default Ember.Service.extend({
     init: function() {
         this._super.apply(this, arguments);
 
-        if (ENV.environment == 'production') {
-            this.set('socketHost', 'ws://agentdown.com/ws/')
+        if (ENV.environment === 'production') {
+            this.set('socketHost', 'ws://agentdown.com/ws/');
         } else {
-            this.set('socketHost', 'ws://localhost:8080/ws/')
+            this.set('socketHost', 'ws://localhost:8080/ws/');
         }
     },
     initSocket: function(id, onOpen){
@@ -57,7 +57,6 @@ export default Ember.Service.extend({
 
         game.save().then(function(game) {
             this.set('game', game);
-            this.set('cache.gameId', game.get('id'));
 
             var player = store.createRecord('player', {
                 game: game,
@@ -69,7 +68,6 @@ export default Ember.Service.extend({
 
             player.save().then(function(player){
                 this.set('player', player);
-                this.set('cache.playerId', player.get('id'));
 
                 this.initSocket(game.get('id'));
 
@@ -87,7 +85,6 @@ export default Ember.Service.extend({
             name: playerName
         }).save().then(function(player){
             this.set('player', player);
-            this.set('cache.playerId', player.get('id'));
             doneFunc(player);
         }.bind(this));
     },
@@ -98,7 +95,6 @@ export default Ember.Service.extend({
         }
 
         this.set('game', game);
-        this.set('cache.gameId', game.get('id'));
 
         this.player.set('game', game);
         this.player.save().then(function(){
@@ -116,7 +112,7 @@ export default Ember.Service.extend({
     sendSocket: function(msg) {
         if ( !this.get('socketInitialized') )
         {
-            this.initSocket(sendSocket.bind(this, msg));
+            this.initSocket(this.sendSocket.bind(this, msg));
         }
 
         var socket = this.get('socket');
@@ -136,7 +132,7 @@ export default Ember.Service.extend({
         game.set('latitude', coordinates.latitude);
         game.set('longitude', coordinates.longitude);
 
-        game.save().then(function(game){
+        game.save().then(function(/*game*/){
             this.sendSocket({
                 name: "created",
                 data: {
@@ -145,5 +141,53 @@ export default Ember.Service.extend({
                 }
             });
         }.bind(this));
-    }
+    },
+    reset: function() {
+        this.set('game', null);
+        this.set('player', null);
+    },
+    reloadGame: function(gameGetter) {
+        if ( this.get('game') ) {
+            return true;
+        }
+
+        var gameId = this.get('cache.gameId');
+        if ( gameId ) {
+            var p = gameGetter(gameId);
+            this.set('game', p);
+            return true;
+        } else {
+            return false;
+        }
+    },
+    reloadPlayer: function(playerGetter) {
+        if ( this.get('player') ) {
+            return true;
+        }
+
+        var playerId = this.get('cache.playerId');
+        if ( playerId ) {
+            this.set('player', playerGetter(playerId));
+            return true;
+        } else {
+            return false;
+        }
+    },
+    gameChanged: function(){
+        var game = this.get('game');
+        if ( game ) {
+            this.set('cache.gameId', game.get('id'));
+        } else {
+            this.set('cache.gameId', null);
+        }
+    }.observes('game'),
+    playerChanged: function(){
+        var player = this.get('player');
+        if ( player ) {
+            this.set('cache.playerId', player.get('id'));
+        } else {
+            this.set('cache.playerId', null);
+        }
+
+    }.observes('player')
 });

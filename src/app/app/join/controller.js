@@ -18,6 +18,14 @@ export default Ember.Controller.extend({
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
+        var success = gs.reloadPlayer(function(playerId) {
+            return this.get('store').findRecord('player', playerId);
+        }.bind(this));
+
+        if ( !success ) {
+            this.transitionToRoute('index');
+        }
+
         var socketAddress = gs.get('socketHost') + 'join';
 
         var socket = this.get('socketService').socketFor(socketAddress);
@@ -34,9 +42,6 @@ export default Ember.Controller.extend({
                 this.send('updateGames');
             }
         }.bind(this), this);
-        socket.on('close', function() {
-
-        }, this);
 
         this.set('socket', socket);
     },
@@ -56,6 +61,9 @@ export default Ember.Controller.extend({
         }
     },
     willDestroy() {
-        this.get('socketService').closeSocketFor('ws://localhost:7000/');
+        var gs = this.get('gameState');
+
+        var socketAddress = gs.get('socketHost') + 'join';
+        this.get('socketService').closeSocketFor(socketAddress);
     }
 });
