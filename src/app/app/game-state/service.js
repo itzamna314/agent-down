@@ -29,22 +29,36 @@ export default Ember.Service.extend({
 
         var socket = this.get('socketService').socketFor(socketUrl);
 
+        var reconnectsLeft = 5;
+
         socket.on('open', function(){
             this.set('socketInitialized', true);
             this.set('socket', socket);
             if( onOpen ){ onOpen(); }
+            reconnectsLeft = 5;
         }, this);
         socket.on('message', function(event){
+            console.log('Got socket message: ' + event.data);
+
             var d = JSON.parse(event.data);
 
             switch(d.command){
-                case "joined":
-                    this.get('game').reload();
+                case 'joined':
+                case 'left':
+                    var g = this.get('game');
+                    if ( g ) { g.reload(); }
+                    break;
+                case 'abandoned':
+                    this.reset();
+                    this.transitionToRoute('index');
                     break;
             }
         }, this);
         socket.on('close', function() {
-
+            if ( reconnectsLeft > 0 ) {
+                socket.reconnect();
+                reconnectsLeft--;
+            }
         }, this);
     },
     newGame: function(store, creatorName, doneFunc) {
@@ -110,6 +124,8 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     sendSocket: function(msg) {
+        console.log('Sending socket: ' + JSON.stringify(msg));
+
         if ( !this.get('socketInitialized') )
         {
             this.initSocket(this.sendSocket.bind(this, msg));
@@ -121,9 +137,9 @@ export default Ember.Service.extend({
             socket.send(JSON.stringify(msg));
         } else {
             socket.reconnect();
-            socket.on('open', function(){
+            socket.on('open.temp', function(){
                 socket.send(JSON.stringify(msg));
-                socket.off('open', this);
+                socket.off('open.temp', this);
             });
         }
     },
@@ -143,8 +159,26 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     reset: function() {
-        this.set('game', null);
+        var p = this.get('player');
+        var g = this.get('game');
+
+        if ( g ) {
+            if (p && g.get('creator.id') !== p.get('id')) {
+                g.set('players', g.get('players').filter(function (pl) {
+                    return pl.id !== p.id;
+                }));
+                g.save().then(this.sendSocket.bind(this, {name:'left', data: {playerId: p.get('id')}}));
+            } else {
+                g.destroyRecord().then(this.sendSocket.bind(this, {name:'abandoned', data: {}}));
+            }
+        }
+
+        if ( p ) {
+            p.destroyRecord();
+        }
+
         this.set('player', null);
+        this.set('game', null);
     },
     reloadGame: function(gameGetter) {
         if ( this.get('game') ) {
@@ -189,5 +223,10 @@ export default Ember.Service.extend({
             this.set('cache.playerId', null);
         }
 
-    }.observes('player')
+    }.observes('player'),
+    willDestroy() {
+        var socketAddress = this.get('socketHost') + 'join';
+        this.get('socket').off('close');
+        this.get('socketService').closeSocketFor(socketAddress);
+    }
 });

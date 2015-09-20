@@ -30,8 +30,10 @@ export default Ember.Controller.extend({
 
         var socket = this.get('socketService').socketFor(socketAddress);
 
+        var reconnectsLeft = 5;
+
         socket.on('open', function(){
-            console.log('socket opened');
+            reconnectsLeft = 5;
         }, this);
         socket.on('message', function(event){
             var d = JSON.parse(event.data);
@@ -42,6 +44,12 @@ export default Ember.Controller.extend({
                 this.send('updateGames');
             }
         }.bind(this), this);
+        socket.on('close', function(){
+            if ( reconnectsLeft > 0 ) {
+                socket.reconnect();
+                reconnectsLeft--;
+            }
+        }.bind(this), this);
 
         this.set('socket', socket);
     },
@@ -49,7 +57,7 @@ export default Ember.Controller.extend({
         joinGame: function(game){
             var gameState = this.get('gameState');
 
-            if ( !gameState || !gameState.player ) {
+            if ( !gameState || !gameState.get('player') ) {
                 this.transitionToRoute('index');
             }
 
@@ -64,6 +72,7 @@ export default Ember.Controller.extend({
         var gs = this.get('gameState');
 
         var socketAddress = gs.get('socketHost') + 'join';
+        this.get('socket').off('close');
         this.get('socketService').closeSocketFor(socketAddress);
     }
 });

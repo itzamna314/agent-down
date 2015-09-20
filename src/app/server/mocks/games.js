@@ -13,7 +13,8 @@ module.exports = function(app) {
       secondsRemaining: 420,
       location: 1,
       latitude: null,
-      longitude: null
+      longitude: null,
+      players: [1,3]
   }, {
       id: 2,
       spy: null,
@@ -24,7 +25,8 @@ module.exports = function(app) {
       secondsRemaining: null,
       location: null,
       latitude: null,
-      longitude: null
+      longitude: null,
+      players: [2,4]
   }];
 
   gamesRouter.get('/', function(req, res) {
@@ -52,10 +54,11 @@ module.exports = function(app) {
   });
 
   gamesRouter.put('/:id', function(req, res) {
+      var g = allGames[0];
+      g.id = req.params.id;
+
     res.send({
-      'games': {
-        id: req.params.id
-      }
+      'games': g
     });
   });
 

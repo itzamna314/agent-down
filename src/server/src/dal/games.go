@@ -152,5 +152,21 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 	}
 
 	return FetchGame(db, id)
+}
 
+func RemoveGame(db *sql.DB, id int64) error {
+	_, err := db.Exec(`UPDATE player
+		                 SET gameId = null
+		               WHERE gameId = ?`,
+		id)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`DELETE FROM game
+		                    WHERE id = ?`,
+		id)
+
+	return err
 }

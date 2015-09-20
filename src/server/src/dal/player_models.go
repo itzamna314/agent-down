@@ -2,11 +2,10 @@ package dal
 
 import (
 	"database/sql"
-	"strconv"
 )
 
 type Player struct {
-	Id             *string `json:"id"`
+	Id             *int    `json:"id,string"`
 	Name           *string `json:"name"`
 	GameId         *int64  `json:"game,string"`
 	IsSpy          *bool   `json:"isSpy"`
@@ -38,10 +37,8 @@ func newPlayerDto() *playerDto {
 }
 
 func (p *playerDto) ToPlayer() *Player {
-	idStr := strconv.Itoa(*p.id)
-
 	return &Player{
-		Id:             &idStr,
+		Id:             p.id,
 		Name:           p.name,
 		GameId:         IntOrNull(p.gameId),
 		IsSpy:          BoolOrNull(p.isSpy),

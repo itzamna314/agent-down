@@ -67,7 +67,7 @@ func ServePlayers(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "DELETE requires id", 405)
 			return
 		}
-		deletePlayer(w, r, playerId)
+		deletePlayer(w, db, playerId)
 	default:
 		http.Error(w, fmt.Sprintf("Method %s not recognized", r.Method), 405)
 	}
@@ -201,6 +201,14 @@ func replacePlayer(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	w.Write(j)
 }
 
-func deletePlayer(w http.ResponseWriter, r *http.Request, id int) {
+func deletePlayer(w http.ResponseWriter, db *sql.DB, id int) {
+	err := dal.RemovePlayer(db, int64(id))
 
+	if err != nil {
+
+		log.Println(err)
+		http.Error(w, "Failed to delete player", 500)
+	} else {
+		w.WriteHeader(204)
+	}
 }

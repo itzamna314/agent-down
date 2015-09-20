@@ -2,15 +2,14 @@ package dal
 
 import (
 	"database/sql"
-	"strconv"
 )
 
 type PlayerId struct {
 }
 
 type Game struct {
-	Id               *string  `json:"id"`
-	LocationId       *int64   `json:"locationId"`
+	Id               *int     `json:"id,string"`
+	LocationId       *int64   `json:"locationId,string"`
 	State            *string  `json:"state"`
 	SecondsRemaining *int64   `json:"secondsRemaining"`
 	Latitude         *float64 `json:"latitude"`
@@ -53,9 +52,8 @@ func newGameDto() *gameDto {
 }
 
 func (g *gameDto) ToGame() *Game {
-	idStr := strconv.Itoa(*g.id)
 	return &Game{
-		Id:               &idStr,
+		Id:               g.id,
 		LocationId:       IntOrNull(g.locationId),
 		State:            g.state,
 		SecondsRemaining: g.secondsRemaining,

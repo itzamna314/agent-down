@@ -93,6 +93,10 @@ type GameData struct {
 	PlayerId int64  `json:"playerId"`
 }
 
+type EmptyData struct {
+	Command string `json:"command"`
+}
+
 func (h *createHub) handle(c *connection, msg []byte, t int) {
 	var command GameCommand
 	if err := json.Unmarshal(msg, &command); err != nil {
@@ -115,7 +119,6 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 		}
 		h.handleCreated(&d)
 	case "joined":
-		log.Println("Handling join")
 		i, err := strconv.Atoi(command.Data["playerId"].(string))
 		if err != nil {
 			log.Println("Illegal player id: %s\n", i)
@@ -137,6 +140,48 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			message: j,
 		}
 
+		h.broadcast <- &msg
+	case "left":
+		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		if err != nil {
+			log.Println("Illegal player id: %s\n", i)
+			return
+		}
+
+		d := GameData{
+			Command:  "left",
+			PlayerId: int64(i),
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Println("Failed to marshall data: %v\n", d)
+			return
+		}
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		h.unregister <- c
+		h.broadcast <- &msg
+
+	case "abandoned":
+		d := EmptyData{
+			Command: "abandoned",
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Println("Failed to marshall data: %v\n", d)
+			return
+		}
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		h.unregister <- c
 		h.broadcast <- &msg
 	}
 }
