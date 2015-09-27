@@ -3,9 +3,7 @@ import Ember from 'ember';
 export default Ember.Route.extend({
     actions:{
         didTransition:function(){
-            this.get('controller').send('reset').then(function(action, data){
-
-            });
+            this.get('controller').send('reset');
         }
     }
 });

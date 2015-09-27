@@ -1,7 +1,5 @@
 import Ember from 'ember';
-import _ from 'lodash/lodash';
 
-import ENV from 'agent-down/config/environment';
 import Cache from 'agent-down/game-state/model';
 
 export default Ember.Service.extend({
@@ -11,66 +9,63 @@ export default Ember.Service.extend({
     init: function() {
         this._super.apply(this, arguments);
     },
-    newGame: function(store, creatorName, doneFunc) {
-        var game = store.createRecord('game', {
-            createdOn: '08/30/2015',
-            state: 'awaitingPlayers'
-        });
+    newGame: function(store, creatorName) {
+        return new Ember.RSVP.Promise(function(resolve, reject){
+            var d = new Date();
 
-        console.log(game);
-
-        game.save().then(function(game) {
-            this.set('game', game);
-
-            var player = store.createRecord('player', {
-                game: game,
-                name: creatorName,
-                isCreator: true,
-                hasAccused: null,
-                isSpy: null
+            var game = store.createRecord('game', {
+                createdOn: d.getMonth() + '/' + d.getDate() + '/' + d.getYear(),
+                state: 'awaitingPlayers'
             });
 
-            player.save().then(function(player){
-                this.set('player', player);
+            console.log(game);
 
-                this.prepareSocket(game.get('id'));
+            game.save().then(function(game) {
+                this.set('game', game);
 
-                game.set('creator', player);
-                game.save().then(function(game){
-                    doneFunc(game);
+                var player = store.createRecord('player', {
+                    game: game,
+                    name: creatorName,
+                    isCreator: true,
+                    hasAccused: null,
+                    isSpy: null
+                });
+
+                player.save().then(function(player){
+                    this.set('player', player);
+
+                    game.set('creator', player);
+                    game.save().then(function(game){
+                        resolve(game, player);
+                    }.bind(this));
                 }.bind(this));
             }.bind(this));
         }.bind(this));
-
-
     },
-    initPlayer: function(store, playerName, doneFunc) {
-        store.createRecord('player', {
-            name: playerName
-        }).save().then(function(player){
-            this.set('player', player);
-            doneFunc(player);
+    initPlayer: function(store, playerName) {
+        return new Ember.Promise(function(resolve, reject){
+            store.createRecord('player', {
+                name: playerName
+            }).save().then(function(player){
+                this.set('player', player);
+                resolve(player);
+            }.bind(this), function(reason) {
+                reject(reason);
+            });
         }.bind(this));
     },
-    joinGame: function(store, game, doneFunc) {
-        if ( this.player == null || game == null) {
-            doneFunc();
-            return;
-        }
+    joinGame: function(game) {
+        return new Ember.Promise(function(resolve, reject) {
+            if ( this.player == null || game == null) {
+                reject();
+            }
 
-        this.set('game', game);
+            this.set('game', game);
 
-        this.player.set('game', game);
-        this.player.save().then(function(){
-            this.prepareSocket(game.get('id'), function(){
-                this.sendSocket({
-                    name: "joined",
-                    data: {
-                        playerId: this.player.get('id')
-                    }
-                });
+            this.player.set('game', game);
+            this.player.save().then(function(player){
+                resolve(player, game);
             }.bind(this));
-            doneFunc(game);
         }.bind(this));
     },
     setGeoPosition: function(coordinates){
@@ -81,7 +76,7 @@ export default Ember.Service.extend({
         return game.save();
     },
     reset: function(resetPlayer) {
-        return new Promise(function(resolve, reject){
+        return new Ember.RSVP.Promise(function(resolve, reject){
             var p = this.get('player');
             var g = this.get('game');
 
@@ -95,7 +90,7 @@ export default Ember.Service.extend({
 
                         p.set('game', null);
                         p.save().then(function(){
-                            resolve('left', {'playerId': p.get('id')})
+                            resolve('left', {'playerId': p.get('id')});
                         });
                     } else {
                         g.destroyRecord().then(function () {
@@ -120,21 +115,22 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     reloadGame: function(gameGetter) {
-        if ( this.get('game') ) {
-            return true;
-        }
+        return new Ember.RSVP.Promise(function(resolve, reject){
+            if ( this.get('game') ) {
+                resolve(this.get('game'));
+            }
 
-        var gameId = this.get('cache.gameId');
-        if ( gameId ) {
-            gameGetter(gameId).then(function(game) {
-                this.set('game', game);
-            }.bind(this));
-
-            return true;
-        }
-        else {
-            return false;
-        }
+            var gameId = this.get('cache.gameId');
+            if ( gameId ) {
+                gameGetter(gameId).then(function(game) {
+                    this.set('game', game);
+                    resolve(game);
+                }.bind(this));
+            }
+            else {
+                reject('Could not find game');
+            }
+        }.bind(this));
     },
     reloadPlayer: function(playerGetter) {
         if ( this.get('player') ) {

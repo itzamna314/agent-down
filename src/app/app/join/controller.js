@@ -1,5 +1,7 @@
 import Ember from 'ember';
 
+import JoinSocket from '../events/joinSocket';
+
 // Returns in miles
 function dist(lat1, lon1, lat2, lon2) {
     var dlon = lon2 - lon1;
@@ -13,7 +15,6 @@ var threshold = 1;
 
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
-    events: Ember.inject.service('events'),
     socket: null,
     init: function(){
         this._super.apply(this, arguments);
@@ -28,7 +29,9 @@ export default Ember.Controller.extend({
             return;
         }
 
-        this.get('events').joinSocket(function(joinData){
+        var sock = this.container.lookup('objects:joinSocket').create();
+
+        sock.on('incomingGame', function(joinData){
             var geoPos = this.get('model.geoPosition');
 
             var distance = dist(joinData.latitude, joinData.longitude, geoPos.latitude, geoPos.longitude);
@@ -38,23 +41,19 @@ export default Ember.Controller.extend({
             if (distance < threshold) {
                 this.send('updateGames');
             }
-        }.bind(this)).then(function(socket){
-            this.set('socket', socket);
         }.bind(this));
+
+        this.set('socket', sock);
     },
     actions:{
         joinGame: function(game){
             var gameState = this.get('gameState');
 
-            if ( !gameState || !gameState.get('player') ) {
-                this.transitionToRoute('index');
-            }
-
-            gameState.joinGame(this.store, game, (function(game) {
-                if (!game) { this.transitionToRoute('index'); return; }
-                this.get('socket').kill();
+            gameState.joinGame(game).then(function(player, game) {
                 this.transitionToRoute('create', game);
-            }).bind(this));
+            }.bind(this), function(){
+                this.transitionToRoute('index');
+            }.bind(this));
         },
         reset (){
             var gs = this.get('gameState');

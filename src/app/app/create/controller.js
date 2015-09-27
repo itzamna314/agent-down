@@ -3,6 +3,7 @@ import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
 export default Ember.Controller.extend(GeoLocationMixin, {
     gameState: Ember.inject.service('game-state'),
+    socket: null,
     init: function() {
         var gs = this.get('gameState');
 
@@ -13,11 +14,28 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             return;
         }
 
-        if ( !gs.reloadGame(function(gameId){
+        gs.reloadGame(function(gameId){
                 return this.store.findRecord('game', gameId);
-        }.bind(this))) {
+        }.bind(this)).then(function(game){
+            var id = game.get('id');
+            var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+
+            sock.on('joined', function() {
+                this.get('model').reload();
+            }.bind(this));
+
+            sock.on('left', function() {
+                this.get('model').reload();
+            }.bind(this));
+
+            sock.on('abandoned', function() {
+                this.transitionToRoute('join');
+                this.get('gameState').reset(false);
+            }.bind(this));
+        }.bind(this), function(reason) {
+            console.log('Error: ' + reason);
             this.transitionToRoute('index');
-        }
+        }.bind(this));
     },
     actions: {
         createGame: function() {

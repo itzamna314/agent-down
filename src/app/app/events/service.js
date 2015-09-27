@@ -1,8 +1,12 @@
 import Ember from 'ember';
 
-export default Ember.Service.extend({
+import ENV from 'agent-down/config/environment';
+
+var svc = Ember.Service.extend({
     socketHost: null,
     socketService: Ember.inject.service('websockets'),
+    joinSocket: null,
+    createSocket: null,
     init: function() {
         if (ENV.environment === 'production') {
             this.set('socketHost', 'ws://agentdown.com/ws/');
@@ -10,21 +14,30 @@ export default Ember.Service.extend({
             this.set('socketHost', 'ws://localhost:8080/ws/');
         }
     },
-    joinSocket: function(incomingGameCb) {
+    getJoinSocket: function(handlerFn) {
         var socketAddress = this.get('socketHost') + 'join';
 
-        return new Promise(function(resolve, reject) {
+        if (this.get('joinSocket') != null )
+        {
+            return new Ember.Promise(function(resolve) {
+                resolve(this.get('joinSocket'));
+            }.bind(this));
+        }
+
+        return new Ember.Promise(function(resolve) {
             var socket = this.get('socketService').socketFor(socketAddress);
 
             socket.kill = function() {
                 socket.off('close', this);
                 socket.close();
+                this.set('joinSocket', null);
             }.bind(this);
 
             var reconnectsLeft = 5;
 
             socket.on('open', function () {
                 reconnectsLeft = 5;
+                this.set('joinSocket', socket);
                 resolve(socket);
             }, this);
             socket.on('message', function (event) {
@@ -33,21 +46,30 @@ export default Ember.Service.extend({
                 }
 
                 var d = JSON.parse(event.data);
-
-                incomingGameCb(d);
+                handlerFn(d);
             }.bind(this), this);
             socket.on('close', function () {
                 if (reconnectsLeft > 0) {
                     socket.reconnect();
                     reconnectsLeft--;
                 }
+                else {
+                    this.set('joinSocket', null);
+                }
             }.bind(this), this);
         }.bind(this));
     },
-    createSocket: function(id, handleJoin, handleLeave, handleAbandon){
+    getCreateSocket: function(id, handlerFn){
         var socketAddress = this.get('socketHost') + 'create/' + id;
 
-        return new Promise(function(resolve, reject){
+        if (this.get('createSocket') != null )
+        {
+            return new Ember.RSVP.Promise(function(resolve) {
+                resolve(this.get('createSocket'));
+            }.bind(this));
+        }
+
+        return new Ember.RSVP.Promise(function(resolve){
             var socket = this.get('socketService').socketFor(socketAddress);
 
             var reconnectsLeft = 5;
@@ -55,6 +77,7 @@ export default Ember.Service.extend({
             socket.kill = function() {
                 socket.off('close', this);
                 socket.close();
+                this.set('createSocket', null);
             }.bind(this);
 
             socket.on('open', function(){
@@ -70,24 +93,20 @@ export default Ember.Service.extend({
 
                 var d = JSON.parse(event.data);
 
-                switch(d.command){
-                    case 'joined':
-                        handleJoin(d);
-                        break;
-                    case 'left':
-                        handleLeave(d);
-                        break;
-                    case 'abandoned':
-                        handleAbandon(d);
-                        break;
-                }
+                handlerFn(d);
             }, this);
             socket.on('close', function() {
                 if ( reconnectsLeft > 0 ) {
                     socket.reconnect();
                     reconnectsLeft--;
                 }
+                else {
+                    this.set('createSocket', null);
+                }
             }, this);
         }.bind(this));
     }
 });
+
+export default svc;
+
