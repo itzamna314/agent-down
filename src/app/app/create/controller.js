@@ -17,7 +17,6 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                 return this.store.findRecord('game', gameId);
         }.bind(this))) {
             this.transitionToRoute('index');
-            return;
         }
     },
     actions: {
@@ -38,12 +37,17 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                     this.transitionToRoute('index');
                 }
 
-                gameState.setGeoPosition(pos.coords);
+                gameState.setGeoPosition(pos.coords).then(function(/*game*/){
+                    this.sendSocket({
+                        name: "created",
+                        data: {
+                            latitude: pos.coords.latitude,
+                            longitude:  pos.coords.longitude
+                        }
+                    });
+                }.bind(this));
 
             }.bind(this));
-        }
-        else
-        {
         }
     })
 });

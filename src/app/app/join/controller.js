@@ -13,7 +13,7 @@ var threshold = 1;
 
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
-    socketService: Ember.inject.service('websockets'),
+    events: Ember.inject.service('events'),
     socket: null,
     init: function(){
         this._super.apply(this, arguments);
@@ -28,40 +28,19 @@ export default Ember.Controller.extend({
             return;
         }
 
-        var socketAddress = gs.get('socketHost') + 'join';
-
-        var socket = this.get('socketService').socketFor(socketAddress);
-
-        var reconnectsLeft = 5;
-
-        socket.on('open', function(){
-            reconnectsLeft = 5;
-        }, this);
-        socket.on('message', function(event){
-            if ( !event.data ) {
-                return;
-            }
-
-            var d = JSON.parse(event.data);
-
+        this.get('events').joinSocket(function(joinData){
             var geoPos = this.get('model.geoPosition');
 
-            var distance = dist(d.latitude, d.longitude, geoPos.latitude, geoPos.longitude);
+            var distance = dist(joinData.latitude, joinData.longitude, geoPos.latitude, geoPos.longitude);
 
             console.log("Incoming game " + distance + " miles away");
 
-            if (  distance < threshold) {
+            if (distance < threshold) {
                 this.send('updateGames');
             }
-        }.bind(this), this);
-        socket.on('close', function(){
-            if ( reconnectsLeft > 0 ) {
-                socket.reconnect();
-                reconnectsLeft--;
-            }
-        }.bind(this), this);
-
-        this.set('socket', socket);
+        }.bind(this)).then(function(socket){
+            this.set('socket', socket);
+        }.bind(this));
     },
     actions:{
         joinGame: function(game){
@@ -72,8 +51,8 @@ export default Ember.Controller.extend({
             }
 
             gameState.joinGame(this.store, game, (function(game) {
-                if (!game) { this.transitionToRoute('index'); }
-                this.get('socket').close();
+                if (!game) { this.transitionToRoute('index'); return; }
+                this.get('socket').kill();
                 this.transitionToRoute('create', game);
             }).bind(this));
         },
@@ -83,10 +62,6 @@ export default Ember.Controller.extend({
         }
     },
     willDestroy() {
-        var gs = this.get('gameState');
-
-        var socketAddress = gs.get('socketHost') + 'join';
-        this.get('socket').off('close');
-        this.get('socketService').closeSocketFor(socketAddress);
+        this.get('socket').kill();
     }
 });

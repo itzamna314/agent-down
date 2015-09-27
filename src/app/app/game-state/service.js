@@ -4,79 +4,12 @@ import _ from 'lodash/lodash';
 import ENV from 'agent-down/config/environment';
 import Cache from 'agent-down/game-state/model';
 
-var socketOpenCallbacks = [];
-
 export default Ember.Service.extend({
     game: null,
     player: null,
     cache: Cache.create(),
-    socketService: Ember.inject.service('websockets'),
-    socket: null,
-    socketInitialized: false,
     init: function() {
         this._super.apply(this, arguments);
-
-        if (ENV.environment === 'production') {
-            this.set('socketHost', 'ws://agentdown.com/ws/');
-        } else {
-            this.set('socketHost', 'ws://localhost:8080/ws/');
-        }
-    },
-    prepareSocket: function(id, onOpen){
-        if ( this.get('socketInitialized') ) {
-            if ( onOpen ) { onOpen(); }
-            return;
-        }
-
-        if (onOpen ) {
-            socketOpenCallbacks.push(onOpen);
-        }
-
-        var socketUrl = this.get('socketHost') + 'create/' + id;
-
-        if ( !this.get('socket') ) {
-            var socket = this.get('socketService').socketFor(socketUrl);
-            this.set('socket', socket);
-
-            var reconnectsLeft = 5;
-
-            socket.on('open', function(){
-                this.set('socketInitialized', true);
-
-                _.each(socketOpenCallbacks, function(cb) {
-                    cb && cb();
-                });
-
-                reconnectsLeft = 5;
-            }, this);
-            socket.on('message', function(event){
-                if ( !event.data ) {
-                    return;
-                }
-
-                console.log('Got socket message: ' + event.data);
-
-                var d = JSON.parse(event.data);
-
-                switch(d.command){
-                    case 'joined':
-                    case 'left':
-                        var g = this.get('game');
-                        if ( g ) { g.reload(); }
-                        break;
-                    case 'abandoned':
-                        this.reset();
-                        this.transitionToRoute('index');
-                        break;
-                }
-            }, this);
-            socket.on('close', function() {
-                if ( reconnectsLeft > 0 ) {
-                    socket.reconnect();
-                    reconnectsLeft--;
-                }
-            }, this);
-        }
     },
     newGame: function(store, creatorName, doneFunc) {
         var game = store.createRecord('game', {
@@ -140,82 +73,51 @@ export default Ember.Service.extend({
             doneFunc(game);
         }.bind(this));
     },
-    sendSocket: function(msg) {
-        console.log('Sending socket: ' + JSON.stringify(msg));
-
-        if ( !this.get('socketInitialized') )
-        {
-            if ( this.get('game') ) {
-                this.prepareSocket(this.get('game.id'), this.sendSocket.bind(this, msg));
-            }
-            else {
-                console.log('Failed to send message: ' + JSON.stringify(msg));
-            }
-
-            return;
-        }
-
-        var socket = this.get('socket');
-
-        if ( !socket )
-        {
-            console.log('Failed to send to message - no socket: ' + JSON.stringify(msg));
-            return;
-        }
-
-        if (this.get('socketService').websocketIsNotClosed(socket)) {
-            socket.send(JSON.stringify(msg));
-        } else {
-            socket.reconnect();
-            socket.on('open', function(){
-                socket.send(JSON.stringify(msg));
-                socket.off('open', this);
-            }.bind(this), this);
-        }
-    },
     setGeoPosition: function(coordinates){
         var game = this.get('game');
         game.set('latitude', coordinates.latitude);
         game.set('longitude', coordinates.longitude);
 
-        game.save().then(function(/*game*/){
-            this.sendSocket({
-                name: "created",
-                data: {
-                    latitude: coordinates.latitude,
-                    longitude:  coordinates.longitude
-                }
-            });
-        }.bind(this));
+        return game.save();
     },
     reset: function(resetPlayer) {
-        var p = this.get('player');
-        var g = this.get('game');
+        return new Promise(function(resolve, reject){
+            var p = this.get('player');
+            var g = this.get('game');
 
-        if ( g ) {
-            if (p && g.get('creator.id') !== p.get('id')) {
-                g.set('players', g.get('players').filter(function (pl) {
-                    return pl.id !== p.id;
-                }));
-                g.save();
-            } else {
-                g.destroyRecord().then(this.sendSocket.bind(this, {name:'abandoned', data: {}}));
+            if ( g ) {
+                if ( p ) {
+                    if (g.get('creator.id') !== p.get('id')) {
+                        g.set('players', g.get('players').filter(function (pl) {
+                            return pl.id !== p.id;
+                        }));
+                        g.save();
+
+                        p.set('game', null);
+                        p.save().then(function(){
+                            resolve('left', {'playerId': p.get('id')})
+                        });
+                    } else {
+                        g.destroyRecord().then(function () {
+                            resolve('abandoned', { });
+                        });
+                    }
+                }
             }
-        }
 
-        this.set('game', null);
+            this.set('game', null);
 
-        if ( p && resetPlayer) {
-            p.destroyRecord();
-            this.set('player', null);
-        }
-        else if (p && p.get('game') != null) {
-            p.set('game', null);
-            p.save().then(this.sendSocket.bind(this, {name:'left', data: {playerId: p.get('id')}}));
-        }
-        else {
-            this.set('player', null);
-        }
+            if ( p && resetPlayer) {
+                p.destroyRecord();
+                this.set('player', null);
+            }
+
+            if ( !p ) {
+                this.set('player', null);
+            }
+
+            resolve();
+        }.bind(this));
     },
     reloadGame: function(gameGetter) {
         if ( this.get('game') ) {
@@ -269,14 +171,5 @@ export default Ember.Service.extend({
             this.set('cache.playerId', null);
         }
 
-    }.observes('player'),
-    willDestroy() {
-        var socketAddress = this.get('socketHost') + 'join';
-        this.get('socket').off('close');
-        this.get('socketService').closeSocketFor(socketAddress);
-
-        socketAddress = this.get('socketHost') + 'create';
-        this.get('socket').off('close');
-        this.get('socketService').closeSocketFor(socketAddress);
-    }
+    }.observes('player')
 });
