@@ -32,6 +32,8 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                 this.transitionToRoute('join');
                 this.get('gameState').reset(false);
             }.bind(this));
+
+            this.set('socket', sock);
         }.bind(this), function(reason) {
             console.log('Error: ' + reason);
             this.transitionToRoute('index');
@@ -56,7 +58,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                 }
 
                 gameState.setGeoPosition(pos.coords).then(function(/*game*/){
-                    this.sendSocket({
+                    this.get('socket').writeSocket({
                         name: "created",
                         data: {
                             latitude: pos.coords.latitude,

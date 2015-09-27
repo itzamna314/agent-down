@@ -1,7 +1,5 @@
 import Ember from 'ember';
 
-import JoinSocket from '../events/joinSocket';
-
 // Returns in miles
 function dist(lat1, lon1, lat2, lon2) {
     var dlon = lon2 - lon1;
@@ -49,7 +47,14 @@ export default Ember.Controller.extend({
         joinGame: function(game){
             var gameState = this.get('gameState');
 
-            gameState.joinGame(game).then(function(player, game) {
+            gameState.joinGame(game).then(function(game) {
+                var sock = this.container.lookup('objects:gameSocket').create({gameId:game.get('id')});
+                sock.writeSocket({
+                    name: 'joined',
+                    data:{
+                        'playerId':gameState.get('player.id')
+                    }
+                });
                 this.transitionToRoute('create', game);
             }.bind(this), function(){
                 this.transitionToRoute('index');

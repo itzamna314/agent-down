@@ -43,7 +43,7 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     initPlayer: function(store, playerName) {
-        return new Ember.Promise(function(resolve, reject){
+        return new Ember.RSVP.Promise(function(resolve, reject){
             store.createRecord('player', {
                 name: playerName
             }).save().then(function(player){
@@ -55,7 +55,7 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     joinGame: function(game) {
-        return new Ember.Promise(function(resolve, reject) {
+        return new Ember.RSVP.Promise(function(resolve, reject) {
             if ( this.player == null || game == null) {
                 reject();
             }
@@ -63,8 +63,8 @@ export default Ember.Service.extend({
             this.set('game', game);
 
             this.player.set('game', game);
-            this.player.save().then(function(player){
-                resolve(player, game);
+            this.player.save().then(function(/*player*/){
+                resolve(game);
             }.bind(this));
         }.bind(this));
     },

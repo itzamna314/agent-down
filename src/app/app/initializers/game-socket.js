@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
 function readGameSocket(data) {
-    this.triger(data.command, data);
+    this.trigger(data.command, data);
 }
 
 function sendOnOpen(msg, sender, key/*, value, rev*/) {
@@ -23,7 +23,7 @@ export function initialize(container, application) {
                 this.addObserver('socket', this, sendOnOpen.bind(this, JSON.stringify(data)));
             }
             else {
-                sock.send(data);
+                sock.send(JSON.stringify(data));
             }
         },
         init: function () {

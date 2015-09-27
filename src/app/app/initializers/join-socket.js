@@ -21,7 +21,7 @@ export function initialize(container, application) {
               this.addObserver('socket', this, sendOnOpen.bind(this, JSON.stringify(data)));
           }
           else {
-              sock.send(data);
+              sock.send(JSON.stringify(data));
           }
       },
       init: function() {
@@ -30,8 +30,7 @@ export function initialize(container, application) {
           svc.getJoinSocket(readJoinSocket.bind(this))
               .then(function(socket){
                   this.set('socket', socket);
-              }
-          );
+              }.bind(this));
       }
     });
 

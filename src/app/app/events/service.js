@@ -19,12 +19,12 @@ var svc = Ember.Service.extend({
 
         if (this.get('joinSocket') != null )
         {
-            return new Ember.Promise(function(resolve) {
+            return new Ember.RSVP.Promise(function(resolve) {
                 resolve(this.get('joinSocket'));
             }.bind(this));
         }
 
-        return new Ember.Promise(function(resolve) {
+        return new Ember.RSVP.Promise(function(resolve) {
             var socket = this.get('socketService').socketFor(socketAddress);
 
             socket.kill = function() {
