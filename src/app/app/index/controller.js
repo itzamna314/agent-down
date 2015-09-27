@@ -17,7 +17,7 @@ export default Ember.Controller.extend({
         },
         reset (){
             var gs = this.get('gameState');
-            gs.reset();
+            gs.reset(true);
         }
     }
 });

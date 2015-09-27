@@ -26,7 +26,7 @@ export default Ember.Route.extend({
             var gs = this.get('gameState');
 
             gs.set('game', game);
-            gs.initSocket(game.get('id'));
+            gs.prepareSocket(game.get('id'));
         }.bind(this));
     }
 });

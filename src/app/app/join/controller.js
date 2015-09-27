@@ -24,6 +24,8 @@ export default Ember.Controller.extend({
 
         if ( !success ) {
             this.transitionToRoute('index');
+            console.log('Failed to reload player');
+            return;
         }
 
         var socketAddress = gs.get('socketHost') + 'join';
@@ -36,11 +38,19 @@ export default Ember.Controller.extend({
             reconnectsLeft = 5;
         }, this);
         socket.on('message', function(event){
+            if ( !event.data ) {
+                return;
+            }
+
             var d = JSON.parse(event.data);
 
             var geoPos = this.get('model.geoPosition');
 
-            if ( dist(d.latitude, d.longitude, geoPos.latitude, geoPos.longitude) < threshold) {
+            var distance = dist(d.latitude, d.longitude, geoPos.latitude, geoPos.longitude);
+
+            console.log("Incoming game " + distance + " miles away");
+
+            if (  distance < threshold) {
                 this.send('updateGames');
             }
         }.bind(this), this);
@@ -66,6 +76,10 @@ export default Ember.Controller.extend({
                 this.get('socket').close();
                 this.transitionToRoute('create', game);
             }).bind(this));
+        },
+        reset (){
+            var gs = this.get('gameState');
+            gs.reset(false);
         }
     },
     willDestroy() {

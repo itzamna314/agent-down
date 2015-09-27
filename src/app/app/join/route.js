@@ -15,8 +15,13 @@ var threshold = 1;
 export default Ember.Route.extend(GeoLocationMixin, {
     geoPosition: null,
     actions: {
+        didTransition: function() {
+            this.get('controller').send('reset');
+        },
         updateGames: function(){
             this.refresh();
+
+            return false;
         }
     },
     beforeModel: function() {

@@ -62,6 +62,7 @@ func (h *createHub) Run() {
 			}
 		case m := <-h.broadcast:
 			if g, ok := h.games[m.gameId]; ok {
+				log.Printf("Broadcast to game id: %v\n", m.gameId)
 				select {
 				case g.broadcast <- m.message:
 				default:
@@ -163,8 +164,11 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			message: j,
 		}
 
-		h.unregister <- c
+		log.Printf("Got left message for game: %v\n", gameId)
+		log.Printf("Sending message: %s\n", j)
+
 		h.broadcast <- &msg
+		//h.unregister <- c
 
 	case "abandoned":
 		d := EmptyData{
@@ -181,8 +185,11 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			message: j,
 		}
 
-		h.unregister <- c
+		log.Printf("Got abandoned message for game: %v\n", gameId)
+		log.Printf("Sending message: %s\n", j)
+
 		h.broadcast <- &msg
+		//h.unregister <- c
 	}
 }
 

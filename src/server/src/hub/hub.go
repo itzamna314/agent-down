@@ -47,6 +47,10 @@ func (h *hub) run() {
 				}
 			}
 		case _ = <-h.kill:
+			for c := range h.connections {
+				close(c.send)
+				delete(h.connections, c)
+			}
 			return
 		}
 	}
