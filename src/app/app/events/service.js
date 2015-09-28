@@ -17,9 +17,13 @@ var svc = Ember.Service.extend({
     getJoinSocket: function(handlerFn) {
         var socketAddress = this.get('socketHost') + 'join';
 
-        if (this.get('joinSocket') != null )
+        var socket = this.get('joinSocket');
+
+        var reconnectsLeft = 5;
+
+        if (socket != null && this.get('socketService').websocketIsNotClosed(socket))
         {
-            return new Ember.RSVP.Promise(function(resolve) {
+            return new Ember.RSVP.Promise(function (resolve) {
                 resolve(this.get('joinSocket'));
             }.bind(this));
         }
@@ -28,12 +32,10 @@ var svc = Ember.Service.extend({
             var socket = this.get('socketService').socketFor(socketAddress);
 
             socket.kill = function() {
-                socket.off('close', this);
+                socket.off('close', socketClosed.bind(this));
                 socket.close();
                 this.set('joinSocket', null);
             }.bind(this);
-
-            var reconnectsLeft = 5;
 
             socket.on('open', function () {
                 reconnectsLeft = 5;
@@ -48,41 +50,55 @@ var svc = Ember.Service.extend({
                 var d = JSON.parse(event.data);
                 handlerFn(d);
             }.bind(this), this);
-            socket.on('close', function () {
-                if (reconnectsLeft > 0) {
-                    socket.reconnect();
-                    reconnectsLeft--;
-                }
-                else {
-                    this.set('joinSocket', null);
-                }
-            }.bind(this), this);
+            socket.on('close', socketClosed.bind(this), this);
+
+            // If it was already open, we still need to resolve the promise and save the socket
+            if (this.get('socketService').websocketIsNotClosed(socket)) {
+                this.set('joinSocket', socket);
+                resolve(socket);
+            }
         }.bind(this));
+
+        function socketClosed()
+        {
+            if ( reconnectsLeft > 0 ) {
+                socket.reconnect();
+                reconnectsLeft--;
+            }
+            else {
+                this.set('joinSocket', null);
+            }
+        }
     },
     getCreateSocket: function(id, handlerFn){
         var socketAddress = this.get('socketHost') + 'create/' + id;
 
-        if (this.get('createSocket') != null )
+        var socket = this.get('createSocket');
+
+        if (socket != null  && this.get('socketService').websocketIsNotClosed(socket))
         {
             return new Ember.RSVP.Promise(function(resolve) {
                 resolve(this.get('createSocket'));
+                console.log('case 1');
             }.bind(this));
         }
+
+        var reconnectsLeft = 5;
 
         return new Ember.RSVP.Promise(function(resolve){
             var socket = this.get('socketService').socketFor(socketAddress);
 
-            var reconnectsLeft = 5;
-
             socket.kill = function() {
-                socket.off('close', this);
+                socket.off('close', socketClosed.bind(this));
                 socket.close();
                 this.set('createSocket', null);
             }.bind(this);
 
             socket.on('open', function(){
                 reconnectsLeft = 5;
+                this.set('createSocket', socket);
                 resolve(socket);
+                console.log('case 2');
             }, this);
             socket.on('message', function(event){
                 if ( !event.data ) {
@@ -95,16 +111,25 @@ var svc = Ember.Service.extend({
 
                 handlerFn(d);
             }, this);
-            socket.on('close', function() {
-                if ( reconnectsLeft > 0 ) {
-                    socket.reconnect();
-                    reconnectsLeft--;
-                }
-                else {
-                    this.set('createSocket', null);
-                }
-            }, this);
+            socket.on('close',socketClosed.bind(this), this);
+
+            if (socket.readyState() === WebSocket.OPEN) {
+                this.set('createSocket', socket);
+                resolve(socket);
+                console.log('case 3');
+            }
         }.bind(this));
+
+        function socketClosed()
+        {
+            if ( reconnectsLeft > 0 ) {
+                socket.reconnect();
+                reconnectsLeft--;
+            }
+            else {
+                this.set('createSocket', null);
+            }
+        }
     }
 });
 

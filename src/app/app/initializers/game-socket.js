@@ -4,10 +4,11 @@ function readGameSocket(data) {
     this.trigger(data.command, data);
 }
 
-function sendOnOpen(msg, sender, key/*, value, rev*/) {
+function sendOnOpen(msg, cb, sender, key/*, value, rev*/) {
     var sock = sender.get(key);
     if ( sock != null ) {
         sock.send(msg);
+        cb(msg);
         sender.removeObserver(key, this, sendOnOpen);
     }
 }
@@ -18,13 +19,18 @@ export function initialize(container, application) {
         sockets: Ember.inject.service('events'),
         socket: null,
         writeSocket: function (data) {
-            var sock = this.get('socket');
-            if (!sock) {
-                this.addObserver('socket', this, sendOnOpen.bind(this, JSON.stringify(data)));
-            }
-            else {
-                sock.send(JSON.stringify(data));
-            }
+            var msg = JSON.stringify(data);
+
+            return new Ember.RSVP.Promise(function(resolve, reject){
+                var sock = this.get('socket');
+                if (!sock) {
+                    this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve));
+                }
+                else {
+                    sock.send(msg);
+                    resolve(msg);
+                }
+            }.bind(this));
         },
         init: function () {
             this._super.apply(this, arguments);

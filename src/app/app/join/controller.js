@@ -54,15 +54,23 @@ export default Ember.Controller.extend({
                     data:{
                         'playerId':gameState.get('player.id')
                     }
-                });
-                this.transitionToRoute('create', game);
+                }).then(function(){
+                    this.transitionToRoute('create', game);
+                }.bind(this));
             }.bind(this), function(){
                 this.transitionToRoute('index');
             }.bind(this));
         },
         reset (){
             var gs = this.get('gameState');
-            gs.reset(false);
+            gs.reset(false).then(function(obj){
+                if ( obj ) {
+                    var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
+                    sock.writeSocket(obj.event).then(function(){
+                        console.log('done');
+                    });
+                }
+            }.bind(this));
         }
     },
     willDestroy() {

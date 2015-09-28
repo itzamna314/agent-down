@@ -90,11 +90,11 @@ export default Ember.Service.extend({
 
                         p.set('game', null);
                         p.save().then(function(){
-                            resolve('left', {'playerId': p.get('id')});
+                            resolve({gameId: g.get('id'), event: {name: 'left', data: {'playerId': p.get('id')}}});
                         });
                     } else {
                         g.destroyRecord().then(function () {
-                            resolve('abandoned', { });
+                            resolve({gameId: g.get('id'), event: {name: 'abandoned', data: { }}});
                         });
                     }
                 }
@@ -111,7 +111,9 @@ export default Ember.Service.extend({
                 this.set('player', null);
             }
 
-            resolve();
+            if ( !g || !p ) {
+                resolve();
+            }
         }.bind(this));
     },
     reloadGame: function(gameGetter) {

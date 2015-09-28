@@ -21,14 +21,17 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
             sock.on('joined', function() {
+                console.log('joined');
                 this.get('model').reload();
             }.bind(this));
 
             sock.on('left', function() {
+                console.log('left');
                 this.get('model').reload();
             }.bind(this));
 
             sock.on('abandoned', function() {
+                console.log('abandoned');
                 this.transitionToRoute('join');
                 this.get('gameState').reset(false);
             }.bind(this));
