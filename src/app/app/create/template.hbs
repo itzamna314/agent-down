@@ -4,7 +4,7 @@
 	{{allow-open useGeoPosition=useGeoPosition}}
 {{/if}}
 
-{{joined-player-list players=model.players isCreator=isCreator}}
+{{joined-player-list players=model.players isCreator=isCreator action="kickPlayer"}}
 
 {{#if isCreator }}
 	<div>

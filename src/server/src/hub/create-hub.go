@@ -190,6 +190,34 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 
 		h.broadcast <- &msg
 		//h.unregister <- c
+
+	case "kicked":
+		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		if err != nil {
+			log.Println("Illegal player id: %s\n", i)
+			return
+		}
+
+		d := GameData{
+			Command:  "kicked",
+			PlayerId: int64(i),
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Println("Failed to marshall data: %v\n", d)
+			return
+		}
+
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		log.Printf("Got kicked message for game: %v\n", gameId)
+		log.Printf("Sending message: %s\n", j)
+
+		h.broadcast <- &msg
 	}
 }
 

@@ -1,6 +1,6 @@
 
 {{#each players as |p|}}
-    {{joined-player-list/joined-player player=p isCreator=isCreator}}
+    {{joined-player-list/joined-player player=p isCreator=isCreator action="kickPlayer"}}
 {{else}}
     <div class="no-players">
         <div class="icon"></div>

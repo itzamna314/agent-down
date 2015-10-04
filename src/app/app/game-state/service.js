@@ -42,6 +42,13 @@ export default Ember.Service.extend({
             }.bind(this));
         }.bind(this));
     },
+    setGeoPosition: function(coordinates){
+        var game = this.get('game');
+        game.set('latitude', coordinates.latitude);
+        game.set('longitude', coordinates.longitude);
+
+        return game.save();
+    },
     initPlayer: function(store, playerName) {
         return new Ember.RSVP.Promise(function(resolve, reject){
             store.createRecord('player', {
@@ -50,6 +57,22 @@ export default Ember.Service.extend({
                 this.set('player', player);
                 resolve(player);
             }.bind(this), function(reason) {
+                reject(reason);
+            });
+        }.bind(this));
+    },
+    kickPlayer: function(player) {
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+            if (player == null || this.game == null ) {
+                reject();
+            }
+
+            player.set('game', null);
+
+            player.save().then(function(p){
+                resolve(player);
+            }, 
+            function(reason){
                 reject(reason);
             });
         }.bind(this));
@@ -68,13 +91,6 @@ export default Ember.Service.extend({
             }.bind(this));
         }.bind(this));
     },
-    setGeoPosition: function(coordinates){
-        var game = this.get('game');
-        game.set('latitude', coordinates.latitude);
-        game.set('longitude', coordinates.longitude);
-
-        return game.save();
-    },
     reset: function(resetPlayer) {
         return new Ember.RSVP.Promise(function(resolve, reject){
             var p = this.get('player');
@@ -90,11 +106,6 @@ export default Ember.Service.extend({
                         }.bind(this));
                     }
                     else {
-                        g.set('players', g.get('players').filter(function (pl) {
-                            return pl.id !== p.id;
-                        }));
-                        g.save().then(function(){}, function(reason){ console.log('Failed to save game: ' + reason); });
-
                         p.set('game', null);
                         p.save().then(function(){
                             this.set('game', null);

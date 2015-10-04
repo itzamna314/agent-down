@@ -61,7 +61,9 @@ var svc = Ember.Service.extend({
 
         function socketClosed()
         {
-            if ( reconnectsLeft > 0 ) {
+            var socket = this.get('joinSocket');
+
+            if ( reconnectsLeft > 0 && socket) {
                 socket.reconnect();
                 reconnectsLeft--;
             }
@@ -130,6 +132,8 @@ var svc = Ember.Service.extend({
 
         function socketClosed()
         {
+            var socket = this.get('createSocket');
+
             if ( reconnectsLeft > 0 && socket) {
                 socket.reconnect();
                 reconnectsLeft--;

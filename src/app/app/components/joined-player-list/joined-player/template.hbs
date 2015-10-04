@@ -1,7 +1,7 @@
 <div class="joined-player">
     <span>{{player.name}}</span>
     {{#if showKick }}
-    	<button>Kick</button>
+    	<button class="kick-player" {{action 'click' player}}>Kick</button>
 	{{/if}}
 </div>
 
