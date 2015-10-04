@@ -17,7 +17,14 @@ export default Ember.Controller.extend({
         },
         reset (){
             var gs = this.get('gameState');
-            gs.reset(true);
+            gs.reset(true).then(function(obj){
+                if ( obj ) {
+                    var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
+                    sock.writeSocket(obj.event).then(function(){
+                        console.log('done');
+                    });
+                }
+            }.bind(this));
         }
     }
 });

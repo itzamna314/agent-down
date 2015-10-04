@@ -15,6 +15,7 @@ function readJoinSocket(data) {
 export function initialize(container, application) {
     var obj = Ember.Object.extend(Ember.Evented, {
       sockets: Ember.inject.service('events'),
+      socket: null,
       writeSocket: function(data) {
           var sock = this.get('socket');
           if (!sock) {
@@ -31,6 +32,12 @@ export function initialize(container, application) {
               .then(function(socket){
                   this.set('socket', socket);
               }.bind(this));
+      },
+      kill: function() {
+        var sock = this.get('socket');
+        if (sock) {
+          sock.kill();
+        }
       }
     });
 

@@ -1,12 +1,20 @@
 <h1>Create</h1>
 
-{{allow-open useGeoPosition=useGeoPosition}}
+{{#if isCreator }}
+	{{allow-open useGeoPosition=useGeoPosition}}
+{{/if}}
 
-{{joined-player-list players=model.players}}
+{{joined-player-list players=model.players isCreator=isCreator}}
 
-<div>
-    {{invite-player}}
-    {{start-game action="createGame"}}
-</div>
+{{#if isCreator }}
+	<div>
+	    {{invite-player}}
+	    {{start-game action="createGame"}}
+	</div>
+{{else}}
+	<div>
+		{{back-button action="back"}}
+	</div>
+{{/if}}
 
 {{outlet}}

@@ -78,7 +78,17 @@ var svc = Ember.Service.extend({
         if (socket != null  && this.get('socketService').websocketIsNotClosed(socket))
         {
             return new Ember.RSVP.Promise(function(resolve) {
-                resolve(this.get('createSocket'));
+                socket.on('message', function(event){
+                    if ( !event.data ) {
+                        return;
+                    }
+                    console.log('Got socket message: ' + event.data);
+                    var d = JSON.parse(event.data);
+
+                    handlerFn(d);
+                }, this);
+
+                resolve(socket);
                 console.log('case 1');
             }.bind(this));
         }
@@ -104,9 +114,7 @@ var svc = Ember.Service.extend({
                 if ( !event.data ) {
                     return;
                 }
-
                 console.log('Got socket message: ' + event.data);
-
                 var d = JSON.parse(event.data);
 
                 handlerFn(d);
@@ -122,7 +130,7 @@ var svc = Ember.Service.extend({
 
         function socketClosed()
         {
-            if ( reconnectsLeft > 0 ) {
+            if ( reconnectsLeft > 0 && socket) {
                 socket.reconnect();
                 reconnectsLeft--;
             }

@@ -7,12 +7,11 @@ export default Ember.Controller.extend(GeoLocationMixin, {
     init: function() {
         var gs = this.get('gameState');
 
-        if ( !gs.reloadPlayer(function(playerId){
+        gs.reloadPlayer(function(playerId){
             return this.store.findRecord('player', playerId);
-        }.bind(this))) {
+        }.bind(this)).then(function(){}, function(){
             this.transitionToRoute('index');
-            return;
-        }
+        }.bind(this));
 
         gs.reloadGame(function(gameId){
                 return this.store.findRecord('game', gameId);
@@ -20,21 +19,24 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             var id = game.get('id');
             var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
-            sock.on('joined', function() {
+            sock.on('joined', this, function() {
                 console.log('joined');
                 this.get('model').reload();
-            }.bind(this));
+            });
 
-            sock.on('left', function() {
+            sock.on('left', this, function() {
                 console.log('left');
                 this.get('model').reload();
-            }.bind(this));
+            });
 
-            sock.on('abandoned', function() {
-                console.log('abandoned');
-                this.transitionToRoute('join');
-                this.get('gameState').reset(false);
-            }.bind(this));
+            sock.on('abandoned', this, function() {
+                var p = gs.get('player');
+                if ( p != null && !p.get('isCreator') ) {
+                    console.log('abandoned');
+                    this.transitionToRoute('join');
+                    this.get('gameState').reset(false);
+                }
+            });
 
             this.set('socket', sock);
         }.bind(this), function(reason) {
@@ -48,6 +50,14 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             /*this.get('geolocation').stop();
 
             this.transitionToRoute('active');*/
+        },
+        back : function() {
+            var sock = this.get('socket');
+            if ( sock ) {
+                sock.kill();
+            }
+
+            this.transitionToRoute('join');
         }
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){
@@ -72,5 +82,11 @@ export default Ember.Controller.extend(GeoLocationMixin, {
 
             }.bind(this));
         }
-    })
+    }),
+    isCreator: Ember.computed('gameState', function(){
+        return this.get('gameState.player.isCreator');
+    }),
+    willDestroy: function(){
+        this.get('geolocation').stop();
+    }
 });

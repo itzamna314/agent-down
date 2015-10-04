@@ -17,15 +17,12 @@ export default Ember.Controller.extend({
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
-        var success = gs.reloadPlayer(function(playerId) {
+        gs.reloadPlayer(function(playerId) {
             return this.get('store').findRecord('player', playerId);
-        }.bind(this));
-
-        if ( !success ) {
+        }.bind(this)).then(function(){}, function(){
             this.transitionToRoute('index');
             console.log('Failed to reload player');
-            return;
-        }
+        }.bind(this));
 
         var sock = this.container.lookup('objects:joinSocket').create();
 

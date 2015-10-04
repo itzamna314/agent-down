@@ -82,21 +82,32 @@ export default Ember.Service.extend({
 
             if ( g ) {
                 if ( p ) {
-                    if (g.get('creator.id') !== p.get('id')) {
+                    if (p.get('isCreator')) {
+                        g.destroyRecord().then(function () {
+                            this.set('player', null);
+                            this.set('game', null);
+                            resolve({gameId: g.get('id'), event: {name: 'abandoned', data: { }}});
+                        }.bind(this));
+                    }
+                    else {
                         g.set('players', g.get('players').filter(function (pl) {
                             return pl.id !== p.id;
                         }));
-                        g.save();
+                        g.save().then(function(){}, function(reason){ console.log('Failed to save game: ' + reason); });
 
                         p.set('game', null);
                         p.save().then(function(){
+                            this.set('game', null);
                             resolve({gameId: g.get('id'), event: {name: 'left', data: {'playerId': p.get('id')}}});
-                        });
-                    } else {
-                        g.destroyRecord().then(function () {
-                            resolve({gameId: g.get('id'), event: {name: 'abandoned', data: { }}});
-                        });
+                        }.bind(this));
                     }
+
+                    if ( resetPlayer ) {
+                        this.set('player', null);
+                    }
+
+                    this.set('game', null);
+                    return;
                 }
             }
 
@@ -120,6 +131,7 @@ export default Ember.Service.extend({
         return new Ember.RSVP.Promise(function(resolve, reject){
             if ( this.get('game') ) {
                 resolve(this.get('game'));
+                return;
             }
 
             var gameId = this.get('cache.gameId');
@@ -135,21 +147,24 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     reloadPlayer: function(playerGetter) {
-        if ( this.get('player') ) {
-            return true;
-        }
+        return new Ember.RSVP.Promise(function(resolve, reject){
+            var p = this.get('player');
+            if ( this.get('player') ) {
+                resolve(p);
+                return;
+            }
 
-        var playerId = this.get('cache.playerId');
-        if ( playerId ) {
-            playerGetter(playerId).then(function(player) {
-                this.set('player', player);
-            }.bind(this));
-
-            return true;
-        }
-        else {
-            return false;
-        }
+            var playerId = this.get('cache.playerId');
+            if ( playerId ) {
+                playerGetter(playerId).then(function(player) {
+                    this.set('player', player);
+                    resolve(player);
+                }.bind(this));
+            }
+            else {
+                reject();
+            }
+        }.bind(this));
     },
     gameChanged: function(){
         var game = this.get('game');

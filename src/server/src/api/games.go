@@ -183,8 +183,13 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	g, err := dal.ReplaceGame(db, int64(id), &body.Game)
 
 	if err != nil {
-		log.Printf("Failed to create game: %s\n", err)
-		http.Error(w, "Failed to create game", 500)
+		if err.Error() == "Game not found" {
+			log.Printf("Game not found: %d\n", id)
+			http.Error(w, "Not found", 404)
+		} else {
+			log.Printf("Failed to replace game: %s\n", err)
+			http.Error(w, "Failed to replace game", 500)
+		}
 		return
 	}
 

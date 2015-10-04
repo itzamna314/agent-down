@@ -2,6 +2,7 @@ package dal
 
 import (
 	"database/sql"
+	"errors"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -132,7 +133,7 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 }
 
 func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
-	_, err := db.Exec(`UPDATE game 
+	res, err := db.Exec(`UPDATE game 
 	  	                  SET locationId = ?
 		                    , state = ?
 		                    , creatorId = ?
@@ -149,6 +150,10 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if num, _ := res.RowsAffected(); num == 0 {
+		return nil, errors.New("Game not found")
 	}
 
 	return FetchGame(db, id)

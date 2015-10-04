@@ -45,6 +45,12 @@ export function initialize(container, application) {
                     this.set('socket', socket);
                 }.bind(this)
             );
+        },
+        kill: function() {
+            var sock = this.get('socket');
+            if (sock) {
+                sock.kill();
+            }
         }
     });
 
