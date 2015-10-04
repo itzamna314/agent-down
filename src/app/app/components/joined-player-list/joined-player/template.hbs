@@ -1,6 +1,8 @@
 <div class="joined-player">
     <span>{{player.name}}</span>
-    <button>Kick</button>
+    {{#if showKick }}
+    	<button>Kick</button>
+	{{/if}}
 </div>
 
 {{yield}}

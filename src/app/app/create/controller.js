@@ -52,12 +52,15 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             this.transitionToRoute('active');*/
         },
         back : function() {
-            var sock = this.get('socket');
-            if ( sock ) {
-                sock.kill();
-            }
+            var gs = this.get('gameState');
+            gs.reset(false).then(function(obj){
+                var sock = this.get('socket');
 
-            this.transitionToRoute('join');
+                sock.writeSocket(obj.event).then(function(){
+                    sock.kill();
+                    this.transitionToRoute('join');
+                }.bind(this));
+            }.bind(this));
         }
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){
