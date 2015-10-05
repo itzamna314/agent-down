@@ -109,6 +109,9 @@ export default Ember.Controller.extend(GeoLocationMixin, {
     isCreator: Ember.computed('gameState', function(){
         return this.get('gameState.player.isCreator');
     }),
+    origin: Ember.computed('document.location.origin', function(){
+        return document.location.origin;
+    }),
     willDestroy: function(){
         this.get('geolocation').stop();
     }

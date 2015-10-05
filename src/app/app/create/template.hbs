@@ -8,7 +8,7 @@
 
 {{#if isCreator }}
 	<div>
-	    {{invite-player}}
+	    {{invite-player origin=origin fromName=gameState.player.name gameId=gameState.game.id}}
 	    {{start-game action="createGame"}}
 	</div>
 {{else}}

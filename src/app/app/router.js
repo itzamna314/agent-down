@@ -12,6 +12,7 @@ Router.map(function() {
   this.route('accuse');
   this.route('results');
   this.route('vote');
+  this.route('invite-received', {path: '/invite-received/:game_id'});
 });
 
 export default Router;
