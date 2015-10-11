@@ -57,6 +57,9 @@ func main() {
 	http.HandleFunc("/api/players", addDefaultHeaders(api.ServePlayers))
 	http.HandleFunc("/api/players/", addDefaultHeaders(api.ServePlayers))
 
+	http.HandleFunc("/api/locations", addDefaultHeaders(api.ServeLocations))
+	http.HandleFunc("/api/locations/", addDefaultHeaders(api.ServeLocations))
+
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

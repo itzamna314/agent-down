@@ -42,7 +42,7 @@ func FetchLocation(db *sql.DB, id int64) (*Location, error) {
 
 	err := row.Scan(l.id, l.name, l.imageUrl)
 	if err != nil {
-		return _, err
+		return nil, err
 	}
 
 	return l.ToLocation(), nil
