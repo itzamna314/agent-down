@@ -1,1 +1,7 @@
+{{#each players as |p|}}
+    {{active-player-list/active-player player=p me=me action="accusePlayer"}}
+{{else}}
+	<p>Oh shit</p>
+{{/each}}
+
 {{yield}}

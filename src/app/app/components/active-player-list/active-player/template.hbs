@@ -1,1 +1,8 @@
+<div class="active-player">
+    <span>{{player.name}}</span>
+    {{#if showAccuse }}
+    	<button class="accuse-player" {{action 'click' player}}>Accuse</button>
+	{{/if}}
+</div>
+
 {{yield}}

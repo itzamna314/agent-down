@@ -9,7 +9,7 @@ type PlayerId struct {
 
 type Game struct {
 	Id               *int     `json:"id,string"`
-	LocationId       *int64   `json:"locationId,string"`
+	LocationId       *int64   `json:"location,string"`
 	State            *string  `json:"state"`
 	SecondsRemaining *int64   `json:"secondsRemaining"`
 	Latitude         *float64 `json:"latitude"`

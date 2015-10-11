@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -193,6 +194,16 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		return
 	}
 
+	if *g.State == "inProgress" && g.LocationId == nil {
+		g, err = selectLocation(g, db)
+
+		if err != nil {
+			log.Printf("Failed to select location")
+			http.Error(w, "Could not assign location", 500)
+			return
+		}
+	}
+
 	resp := gamesRequest{
 		Games: []dal.Game{*g},
 	}
@@ -218,4 +229,20 @@ func deleteGame(w http.ResponseWriter, db *sql.DB, id int) {
 		w.WriteHeader(204)
 
 	}
+}
+
+func selectLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
+	locations, err := dal.ListLocations(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	idx := rand.Intn(len(locations))
+
+	locId := int64(*locations[idx].Id)
+
+	game.LocationId = &locId
+
+	return dal.ReplaceGame(db, int64(*game.Id), game)
 }
