@@ -10,7 +10,7 @@ export default Ember.Service.extend({
         this._super.apply(this, arguments);
     },
     newGame: function(store, creatorName) {
-        return new Ember.RSVP.Promise(function(resolve, reject){
+        return new Ember.RSVP.Promise(function(resolve /*, reject*/){
             var d = new Date();
 
             var game = store.createRecord('game', {
@@ -70,7 +70,7 @@ export default Ember.Service.extend({
             player.set('game', null);
 
             player.save().then(function(p){
-                resolve(player);
+                resolve(p);
             }, 
             function(reason){
                 reject(reason);
@@ -91,8 +91,20 @@ export default Ember.Service.extend({
             }.bind(this));
         }.bind(this));
     },
+    startGame: function() {
+        var game = this.get('game');
+        game.set('state', 'inProgress');
+
+        return new Ember.RSVP.Promise( function(resolve ,reject) {
+            game.save().then(function(g){
+                resolve(g);
+            }, function(reason){
+                reject(reason);
+            });
+        }.bind(this));
+    },
     reset: function(resetPlayer) {
-        return new Ember.RSVP.Promise(function(resolve, reject){
+        return new Ember.RSVP.Promise(function(resolve /*, reject*/){
             var p = this.get('player');
             var g = this.get('game');
 
@@ -194,6 +206,5 @@ export default Ember.Service.extend({
             console.log('Saving no player');
             this.set('cache.playerId', null);
         }
-
     }.observes('player')
 });

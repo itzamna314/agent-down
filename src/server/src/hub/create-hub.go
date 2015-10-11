@@ -164,9 +164,6 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			message: j,
 		}
 
-		log.Printf("Got left message for game: %v\n", gameId)
-		log.Printf("Sending message: %s\n", j)
-
 		h.broadcast <- &msg
 		//h.unregister <- c
 
@@ -177,16 +174,13 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 
 		j, err := json.Marshal(&d)
 		if err != nil {
-			log.Println("Failed to marshall data: %v\n", d)
+			log.Printf("Failed to marshall data: %v\n", d)
 			return
 		}
 		msg := gameMessage{
 			gameId:  gameId,
 			message: j,
 		}
-
-		log.Printf("Got abandoned message for game: %v\n", gameId)
-		log.Printf("Sending message: %s\n", j)
 
 		h.broadcast <- &msg
 		//h.unregister <- c
@@ -214,8 +208,23 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			message: j,
 		}
 
-		log.Printf("Got kicked message for game: %v\n", gameId)
-		log.Printf("Sending message: %s\n", j)
+		h.broadcast <- &msg
+
+	case "started":
+		d := EmptyData{
+			Command: "started",
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Printf("Failed to marshall data: %v\n", d)
+			return
+		}
+
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
 
 		h.broadcast <- &msg
 	}

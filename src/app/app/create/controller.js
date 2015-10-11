@@ -31,7 +31,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
 
             sock.on('kicked', this, function(o) {
                 console.log('kicked');
-                if ( gs.get('player.id') == o.playerId ) {
+                if ( gs.get('player.id') === o.playerId ) {
                     this.transitionToRoute('join');
                 }
             });
@@ -45,6 +45,11 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                 }
             });
 
+            sock.on('started', this, function() {
+                console.log('started');
+                this.transitionToRoute('active');
+            });
+
             this.set('socket', sock);
         }.bind(this), function(reason) {
             console.log('Error: ' + reason);
@@ -52,11 +57,20 @@ export default Ember.Controller.extend(GeoLocationMixin, {
         }.bind(this));
     },
     actions: {
-        createGame: function() {
+        startGame: function() {
+            var gs = this.get('gameState');
+            var sock = this.get('socket');
 
-            /*this.get('geolocation').stop();
-
-            this.transitionToRoute('active');*/
+            gs.startGame().then(function(g){
+                sock.writeSocket({
+                    name: 'started',
+                    data: {
+                        gameId: g.get('id')
+                    }
+                }).then(function(){
+                    this.transitionToRoute('active');
+                }.bind(this));
+            }.bind(this));
         },
         kickPlayer: function(player) {
             var sock = this.get('socket');
