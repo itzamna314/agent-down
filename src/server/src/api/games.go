@@ -195,7 +195,7 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	}
 
 	if *g.State == "inProgress" && g.LocationId == nil {
-		g, err = selectLocation(g, db)
+		g, err = selectSpyAndLocation(g, db)
 
 		if err != nil {
 			log.Printf("Failed to select location")
@@ -231,7 +231,7 @@ func deleteGame(w http.ResponseWriter, db *sql.DB, id int) {
 	}
 }
 
-func selectLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
+func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 	locations, err := dal.ListLocations(db)
 
 	if err != nil {
@@ -240,9 +240,42 @@ func selectLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 
 	idx := rand.Intn(len(locations))
 
+	log.Printf("Selected index %d\n", idx)
+
 	locId := int64(*locations[idx].Id)
 
+	log.Printf("Location id: %d\n", locId)
+
 	game.LocationId = &locId
+
+	idx = rand.Intn(len(game.PlayerIds))
+
+	sId, err := strconv.Atoi(game.PlayerIds[idx])
+
+	if err != nil {
+		log.Println("Failed to convert player id to int")
+		return nil, err
+	}
+
+	spyId := int64(sId)
+
+	game.Spy = &spyId
+
+	player, err := dal.FetchPlayer(db, spyId)
+
+	if err != nil {
+		log.Printf("Failed to fetch player %d\n", spyId)
+		return nil, err
+	}
+
+	*player.IsSpy = true
+
+	_, err = dal.ReplacePlayer(db, int64(spyId), player)
+
+	if err != nil {
+		log.Printf("Failed to set player.IsSpy\n")
+		return nil, err
+	}
 
 	return dal.ReplaceGame(db, int64(*game.Id), game)
 }

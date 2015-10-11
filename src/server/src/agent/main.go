@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"hub"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 func addDefaultHeaders(fn http.HandlerFunc) http.HandlerFunc {
@@ -27,16 +29,14 @@ func addDefaultHeaders(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func helloWorld(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello world"))
-}
-
 func main() {
 	port := flag.Int("port", 8080, "Specify which port to serve")
 	conn := flag.String("conn", "WebClient@tcp(localhost:3306)/agent", "MySql connection string")
 	flag.Parse()
 
 	dal.Init(conn)
+
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	go hub.Join.Run()
 	go hub.Create.Run()

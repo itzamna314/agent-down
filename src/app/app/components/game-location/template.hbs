@@ -1,4 +1,9 @@
-<span>{{location.name}}</span>
-<img src={{location.image}} />
+
+{{#if isNotSpy }}
+	<span>{{location.name}}</span>
+	<img src={{location.image}} />
+{{else}}
+	<span>You are the spy!</span>
+{{/if}}
 
 {{yield}}

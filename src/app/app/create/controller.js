@@ -47,6 +47,8 @@ export default Ember.Controller.extend(GeoLocationMixin, {
 
             sock.on('started', this, function() {
                 console.log('started');
+                gs.get('player').reload();
+                gs.get('game').reload();
                 this.transitionToRoute('active');
             });
 
