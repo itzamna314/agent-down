@@ -7,7 +7,7 @@ import (
 )
 
 func FindAllPlayers(db *sql.DB) ([]*Player, error) {
-	rows, err := db.Query("SELECT id, name, gameId, isSpy, isBeingAccused, isCreator, hasAccused FROM player")
+	rows, err := db.Query("SELECT id, name, gameId, isSpy, isCreator, hasAccused FROM player")
 	if err != nil {
 		return nil, err
 	}
@@ -18,7 +18,7 @@ func FindAllPlayers(db *sql.DB) ([]*Player, error) {
 
 	for rows.Next() {
 		dto := newPlayerDto()
-		err := rows.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isBeingAccused, dto.isCreator, dto.hasAccused)
+		err := rows.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator, dto.hasAccused)
 		if err != nil {
 			return nil, err
 		}
@@ -79,9 +79,9 @@ func CreatePlayer(db *sql.DB, p *Player) (*Player, error) {
 }
 
 func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
-	row := db.QueryRow("SELECT id, name, gameId, isSpy, isBeingAccused, isCreator, hasAccused FROM player WHERE id=?", id)
+	row := db.QueryRow("SELECT id, name, gameId, isSpy, isCreator, hasAccused FROM player WHERE id=?", id)
 	dto := newPlayerDto()
-	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isBeingAccused, dto.isCreator, dto.hasAccused)
+	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator, dto.hasAccused)
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +94,12 @@ func ReplacePlayer(db *sql.DB, id int64, p *Player) (*Player, error) {
 	  	                  SET name = ?
 		                    , gameId = ?
 		                    , isSpy = ?
-		                    , isBeingAccused = ?
 		                    , isCreator = ?
 		                    , hasAccused = ?
 		                    , modifiedOn = CURRENT_TIMESTAMP
 		                    , modifiedBy = ?
 		                WHERE id = ?`,
-		p.Name, p.GameId, p.IsSpy, p.IsBeingAccused, p.IsCreator, p.HasAccused, "dal:ReplacePlayer()", id)
+		p.Name, p.GameId, p.IsSpy, p.IsCreator, p.HasAccused, "dal:ReplacePlayer()", id)
 
 	if err != nil {
 		return nil, err

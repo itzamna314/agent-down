@@ -259,6 +259,8 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 
 	spyId := int64(sId)
 
+	log.Printf("Spy id: %d\n", spyId)
+
 	game.Spy = &spyId
 
 	player, err := dal.FetchPlayer(db, spyId)
