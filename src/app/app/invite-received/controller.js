@@ -8,7 +8,7 @@ export default Ember.Controller.extend({
                 .then(this.resolveGotPlayer.bind(this), this.rejectGotPlayer.bind(this));
         }
     },
-    resolveGotPlayer(player){
+    resolveGotPlayer(/*player*/){
     	this.get('gameState').joinGame(this.get('model')).then(this.resolveJoinedGame.bind(this));
     },
     resolveJoinedGame(game){

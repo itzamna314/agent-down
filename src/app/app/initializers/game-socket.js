@@ -21,7 +21,7 @@ export function initialize(container, application) {
         writeSocket: function (data) {
             var msg = JSON.stringify(data);
 
-            return new Ember.RSVP.Promise(function(resolve, reject){
+            return new Ember.RSVP.Promise(function(resolve /*, reject*/){
                 var sock = this.get('socket');
                 if (!sock) {
                     this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve));

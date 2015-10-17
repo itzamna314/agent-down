@@ -10,7 +10,7 @@ Router.map(function() {
   this.route('join');
   this.route('active');
   this.route('results');
-  this.route('vote');
+  this.route('vote', {path: '/vote/:accusation_id'});
   this.route('invite-received', {path: '/invite-received/:game_id'});
 });
 

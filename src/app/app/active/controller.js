@@ -23,5 +23,23 @@ export default Ember.Controller.extend({
             console.log('Error: ' + reason);
             this.transitionToRoute('index');
         }.bind(this));
+    },
+    actions:{
+        accuse:function(player){
+            var gs = this.get('gameState');
+
+            gs.accuse(this.get('store'), player).then(function(accusation){
+                sock.writeSocket({
+                    name: 'accused',
+                    data: {
+                        accused: player.get('id'),
+                        accuser: gameState.get('player.id')
+                    }
+                });
+            }.bind(this),
+            function(reason){
+                alert('Could not accuse ' + player.get('name') + ': ' + reason);
+            }.bind(this));
+        }
     }
 });

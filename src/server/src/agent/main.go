@@ -60,6 +60,12 @@ func main() {
 	http.HandleFunc("/api/locations", addDefaultHeaders(api.ServeLocations))
 	http.HandleFunc("/api/locations/", addDefaultHeaders(api.ServeLocations))
 
+	http.HandleFunc("/api/accusations", addDefaultHeaders(api.ServeAccusations))
+	http.HandleFunc("/api/accusations/", addDefaultHeaders(api.ServeAccusations))
+
+	http.HandleFunc("/api/votes", addDefaultHeaders(api.ServeVotes))
+	http.HandleFunc("/api/votes/", addDefaultHeaders(api.ServeVotes))
+
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

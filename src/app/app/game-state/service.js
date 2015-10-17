@@ -103,6 +103,20 @@ export default Ember.Service.extend({
             });
         }.bind(this));
     },
+    accuse: function(store, player){
+        return new Ember.RSVP.Promise(function(resolve, reject){
+            store.createRecord('accusation', {
+                game: this.get('game'),
+                accuser: this.get('player'),
+                accused: player
+            }).save().then(function(accusation){
+                resolve(accusation);
+            }.bind(this),
+            function(reason){
+                reject(reason);
+            });
+        }.bind(this));
+    },
     reset: function(resetPlayer) {
         return new Ember.RSVP.Promise(function(resolve /*, reject*/){
             var p = this.get('player');

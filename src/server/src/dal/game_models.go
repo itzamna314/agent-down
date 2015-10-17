@@ -4,9 +4,6 @@ import (
 	"database/sql"
 )
 
-type PlayerId struct {
-}
-
 type Game struct {
 	Id               *int     `json:"id,string"`
 	LocationId       *int64   `json:"location,string"`

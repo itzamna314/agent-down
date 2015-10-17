@@ -59,7 +59,7 @@ create table if not exists playerAccusation(
 	id int primary key not null auto_increment,
     playerId int not null, FOREIGN KEY (playerId) references player (id),
     accusationId int not null, FOREIGN KEY (playerId) references accusation (id),
-    accuse bit not null,
+    accuse boolean not null,
     createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,

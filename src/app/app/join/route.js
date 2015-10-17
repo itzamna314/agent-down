@@ -26,7 +26,7 @@ export default Ember.Route.extend(GeoLocationMixin, {
     },
     beforeModel: function() {
         if ( this.get('geoPosition') ) {
-            return new Ember.RSVP.Promise(function(resolve, reject){
+            return new Ember.RSVP.Promise(function(resolve/*, reject*/){
                 resolve(this.get('geoPosition'));
             }.bind(this));
         }
