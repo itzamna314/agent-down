@@ -21,6 +21,7 @@ create table if not exists game(
     secondsRemaining int not null default 480,
     latitude decimal(16,12) null,
     longitude decimal(16,12) null,
+    clockStartTime datetime not null default CURRENT_TIMESTAMP,
     createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,
@@ -46,14 +47,15 @@ create table if not exists accusation(
     accuserId int not null, FOREIGN KEY (accuserId) references player (id),
     accusedId int not null, FOREIGN KEY (accusedId) references player (id),
     gameId int not null, FOREIGN KEY (gameId) references game (id),
-    votesFor int not null default 0,
-    votesAgainst int not null default 0,
+    time int not null,
     state nvarchar(255) not null default 'voting',
 	createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,
     modifiedBy nvarchar(255) null
 );
+
+create unique index uq_accusation on accusation(accuserId, accusedId, gameId);
 
 create table if not exists playerAccusation(
 	id int primary key not null auto_increment,
@@ -65,6 +67,8 @@ create table if not exists playerAccusation(
     modifiedOn datetime null,
     modifiedBy nvarchar(255) null
 );
+
+create unique index uq_playerAccusation on playerAccusation(playerId, accusationId);
 
 insert into location (name, imagePath, createdOn, createdBy) values
 	('beach', 'http://freedesignfile.com/upload/2013/08/Cartoon-Tropical-Beach-vector-02.jpg', CURRENT_TIMESTAMP, 'seedData')

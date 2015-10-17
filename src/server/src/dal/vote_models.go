@@ -1,9 +1,5 @@
 package dal
 
-import (
-	"database/sql"
-)
-
 type Vote struct {
 	Id           *int   `json:"id,string"`
 	PlayerId     *int64 `json:"player,string"`

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -76,21 +75,53 @@ func ServeVotes(w http.ResponseWriter, r *http.Request) {
 }
 
 func findVotes(w http.ResponseWriter, db *sql.DB, url *url.URL) {
-
+	http.Error(w, "Method not implemented", 405)
 }
 
-func fetchVote(w http.ResponseWriter, db *sql.DB, url *url.URL) {
-
+func fetchVote(w http.ResponseWriter, db *sql.DB, id int) {
+	http.Error(w, "Method not implemented", 405)
 }
 
 func createVote(w http.ResponseWriter, db *sql.DB, b []byte) {
+	var body voteRequest
 
+	if err := json.Unmarshal(b, &body); err != nil {
+		log.Printf("Failed to unmarshal body %s\n", b)
+		http.Error(w, "Could not parse body", 400)
+		return
+	}
+
+	if body.Vote.PlayerId == nil || body.Vote.AccusationId == nil || body.Vote.Accuse == nil {
+		log.Printf("Player, Accusation, and Vote are required\n")
+		http.Error(w, "Player, Accusation, and Vote are required", 400)
+		return
+	}
+
+	vote, err := dal.CreateVote(db, &body.Vote)
+
+	if err != nil {
+		log.Printf("Failed to create vote: %s", err)
+		http.Error(w, "Failed to create vote", 500)
+		return
+	}
+
+	body.Vote = *vote
+
+	j, err := json.Marshal(body)
+
+	if err != nil {
+		log.Printf("Failed to marshal to json: %v", body)
+		http.Error(w, "Failed to marshal to json", 500)
+		return
+	}
+
+	w.Write(j)
 }
 
 func replaceVote(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
-
+	http.Error(w, "Method not implemented", 405)
 }
 
-func deleteVote(w, db *sql.DB, b []byte, id int) {
-
+func deleteVote(w http.ResponseWriter, db *sql.DB, id int) {
+	http.Error(w, "Method not implemented", 405)
 }

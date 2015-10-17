@@ -94,6 +94,11 @@ type GameData struct {
 	PlayerId int64  `json:"playerId"`
 }
 
+type AccuseData struct {
+	Command      string `json:"command"`
+	AccusationId string `json:"accusation"`
+}
+
 type EmptyData struct {
 	Command string `json:"command"`
 }
@@ -218,6 +223,25 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 		j, err := json.Marshal(&d)
 		if err != nil {
 			log.Printf("Failed to marshall data: %v\n", d)
+			return
+		}
+
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		h.broadcast <- &msg
+
+	case "accused":
+		d := AccuseData{
+			Command:      "accused",
+			AccusationId: command.Data["accusation"].(string),
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Println("Error: Failed to marshal data: %v.  %v\n", d, err)
 			return
 		}
 

@@ -27,13 +27,13 @@ export default Ember.Controller.extend({
     actions:{
         accuse:function(player){
             var gs = this.get('gameState');
+            var sock = this.get('socket');
 
             gs.accuse(this.get('store'), player).then(function(accusation){
                 sock.writeSocket({
                     name: 'accused',
                     data: {
-                        accused: player.get('id'),
-                        accuser: gameState.get('player.id')
+                        accusation: accusation.get('id')
                     }
                 });
             }.bind(this),
