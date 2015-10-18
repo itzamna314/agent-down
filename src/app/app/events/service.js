@@ -91,7 +91,6 @@ var svc = Ember.Service.extend({
                 }, this);
 
                 resolve(socket);
-                console.log('case 1');
             }.bind(this));
         }
 

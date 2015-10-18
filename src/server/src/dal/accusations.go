@@ -58,7 +58,7 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 			          	       , ?
 			          	    FROM game
 			          	   WHERE id = ?
-			           )`,
+			           `,
 		a.AccuserId,
 		a.AccusedId,
 		a.GameId,
@@ -71,6 +71,13 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	}
 
 	id, err := result.LastInsertId()
+
+	_, err = db.Exec(
+		`UPDATE player
+		   SET hasAccused = true
+		 WHERE id = ?`,
+		a.AccuserId,
+	)
 
 	if err != nil {
 		return nil, err

@@ -265,11 +265,12 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 
 	player, err := dal.FetchPlayer(db, spyId)
 
-	if err != nil {
-		log.Printf("Failed to fetch player %d\n", spyId)
+	if err != nil || player == nil {
+		log.Printf("Failed to fetch player while selecting spy %d\n", spyId)
 		return nil, err
 	}
 
+	player.IsSpy = new(bool)
 	*player.IsSpy = true
 
 	_, err = dal.ReplacePlayer(db, int64(spyId), player)

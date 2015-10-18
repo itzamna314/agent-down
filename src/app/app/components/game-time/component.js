@@ -1,9 +1,14 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+	stopped: false,
 	startTimer: function(){
 		 Ember.run.later(this, this.tick);
 	}.on('init'),
+	stopTimer: function() {
+		alert('stopping clock!');
+		this.set('stopped', true);
+	}.on('willDestroyElement'),
 	currentTime: Ember.computed('time', function(){
 		var totalSeconds = this.get('time');
 		var minutes = Math.floor(totalSeconds / 60);
@@ -16,6 +21,10 @@ export default Ember.Component.extend({
 		return minutes + ':' + seconds;
 	}),
 	tick: function(){
+		if ( this.get('stopped') ) {
+			return;
+		}
+
 		this.set('time', this.get('time') - 1);
 
 		if ( this.get('time') > 0 ) {
@@ -24,5 +33,5 @@ export default Ember.Component.extend({
 		else {
 			alert('time up!');
 		}
-	}
+	},
 });

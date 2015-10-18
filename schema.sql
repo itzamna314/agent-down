@@ -60,7 +60,7 @@ create unique index uq_accusation on accusation(accuserId, accusedId, gameId);
 create table if not exists playerAccusation(
 	id int primary key not null auto_increment,
     playerId int not null, FOREIGN KEY (playerId) references player (id),
-    accusationId int not null, FOREIGN KEY (playerId) references accusation (id),
+    accusationId int not null, FOREIGN KEY (accusationId) references accusation (id),
     accuse boolean not null,
     createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,

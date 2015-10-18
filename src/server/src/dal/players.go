@@ -109,17 +109,8 @@ func ReplacePlayer(db *sql.DB, id int64, p *Player) (*Player, error) {
 }
 
 func RemovePlayer(db *sql.DB, id int64) error {
-	_, err := db.Exec(`UPDATE game
-		                  SET creatorId = null
-		                WHERE creatorId = ?`,
-		id)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`DELETE FROM player
-		                    WHERE id = ?`,
+	_, err := db.Exec(`DELETE FROM player
+		                     WHERE id = ?`,
 		id)
 
 	return err

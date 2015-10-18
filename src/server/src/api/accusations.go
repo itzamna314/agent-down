@@ -97,17 +97,20 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 
 	if err != nil {
 		log.Printf("Failed to create accusation: %s", err)
-		http.Error(w, "Failed to create accusation", 500)
+		http.Error(w, "Failed to create accusation", 400)
 		return
 	}
 
+	accusationId := int64(*accusation.Id)
+	accuse := true
+
 	vote := dal.Vote{
 		PlayerId:     accusation.AccuserId,
-		AccusationId: accusation.Id,
-		Accuse:       true,
+		AccusationId: &accusationId,
+		Accuse:       &accuse,
 	}
 
-	vote, err = dal.CreateVote(db, vote)
+	_, err = dal.CreateVote(db, &vote)
 
 	if err != nil {
 		log.Printf("Failed to create accuser's vote: %s", err)
@@ -115,7 +118,7 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 		return
 	}
 
-	accusation.votesFor += 1
+	*accusation.VotesFor = 1
 
 	body.Accusation = *accusation
 

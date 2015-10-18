@@ -19,6 +19,12 @@ export default Ember.Controller.extend({
             var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
             this.set('socket', sock);
+
+            sock.on('accused', function(o){
+                var accusation = o.accusation;
+                this.transitionToRoute('vote', accusation);
+            }.bind(this));
+
         }.bind(this), function(reason) {
             console.log('Error: ' + reason);
             this.transitionToRoute('index');

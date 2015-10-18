@@ -110,7 +110,10 @@ export default Ember.Service.extend({
                 accuser: this.get('player'),
                 accused: player
             }).save().then(function(accusation){
-                resolve(accusation);
+                this.get('player').reload().then(function(){
+                    this.set('player.accusationMade', accusation);
+                    resolve(accusation);
+                }.bind(this), function(reason){ reject(reason); } );
             }.bind(this),
             function(reason){
                 reject(reason);

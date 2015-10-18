@@ -9,7 +9,7 @@ import (
 func FetchVote(db *sql.DB, id int64) (*Vote, error) {
 	row := db.QueryRow(`SELECT pa.id
 		                     , pa.playerId
-		                     , pa.accusation
+		                     , pa.accusationId
 		                     , pa.accuse
 		                  FROM playerAccusation pa
 		                 WHERE pa.id = ?`,
