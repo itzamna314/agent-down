@@ -1,14 +1,15 @@
 package dal
 
 type Accusation struct {
-	Id           *int    `json:"id,string"`
-	AccuserId    *int64  `json:"accuser,string"`
-	AccusedId    *int64  `json:"accused,string"`
-	GameId       *int64  `json:"game,string"`
-	Time         *int64  `json:"time"`
-	VotesFor     *int64  `json:"votesFor"`
-	VotesAgainst *int64  `json:"votesAgainst"`
-	State        *string `json:"state"`
+	Id           *int     `json:"id,string"`
+	AccuserId    *int64   `json:"accuser,string"`
+	AccusedId    *int64   `json:"accused,string"`
+	GameId       *int64   `json:"game,string"`
+	Time         *int64   `json:"time"`
+	VotesFor     *int64   `json:"votesFor"`
+	VotesAgainst *int64   `json:"votesAgainst"`
+	State        *string  `json:"state"`
+	Votes        []string `json:"votes"`
 }
 
 type accusationDto struct {

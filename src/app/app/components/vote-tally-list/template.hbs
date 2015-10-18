@@ -1,0 +1,10 @@
+{{#each accusation.votes as |v|}}
+    {{vote-tally-list/vote-tally vote=v me=me}}
+{{else}}
+    <div class="no-players">
+        <div class="icon"></div>
+        <p>No players have voted</p>
+    </div>
+{{/each}}
+
+{{yield}}

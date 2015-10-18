@@ -6,7 +6,6 @@ export default Ember.Component.extend({
 		 Ember.run.later(this, this.tick);
 	}.on('init'),
 	stopTimer: function() {
-		alert('stopping clock!');
 		this.set('stopped', true);
 	}.on('willDestroyElement'),
 	currentTime: Ember.computed('time', function(){

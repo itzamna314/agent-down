@@ -75,7 +75,25 @@ func findAccusations(w http.ResponseWriter, db *sql.DB, url *url.URL) {
 }
 
 func fetchAccusation(w http.ResponseWriter, db *sql.DB, id int) {
-	http.Error(w, "Method not implemented", 405)
+	accusation, err := dal.FetchAccusation(db, int64(id))
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to query db: %s", err), 500)
+		return
+	}
+
+	resp := accusationRequest{
+		Accusation: *accusation,
+	}
+
+	j, err := json.Marshal(resp)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal to json: %v", resp), 500)
+		return
+	}
+
+	w.Write(j)
 }
 
 func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {

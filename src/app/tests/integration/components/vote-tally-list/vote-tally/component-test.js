@@ -1,7 +1,7 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 
-moduleForComponent('voted-player-list/voted-player', 'Integration | Component | voted player list/voted player', {
+moduleForComponent('vote-tally-list/vote-tally', 'Integration | Component | vote tally list/vote tally', {
   integration: true
 });
 
@@ -11,15 +11,15 @@ test('it renders', function(assert) {
   // Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });
 
-  this.render(hbs`{{voted-player-list/voted-player}}`);
+  this.render(hbs`{{vote-tally-list/vote-tally}}`);
 
   assert.equal(this.$().text().trim(), '');
 
   // Template block usage:
   this.render(hbs`
-    {{#voted-player-list/voted-player}}
+    {{#vote-tally-list/vote-tally}}
       template block text
-    {{/voted-player-list/voted-player}}
+    {{/vote-tally-list/vote-tally}}
   `);
 
   assert.equal(this.$().text().trim(), 'template block text');
