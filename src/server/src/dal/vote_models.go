@@ -3,7 +3,7 @@ package dal
 type Vote struct {
 	Id           *int   `json:"id,string"`
 	PlayerId     *int64 `json:"player,string"`
-	AccusationId *int64 `json:"accusation, string"`
+	AccusationId *int64 `json:"accusation,string"`
 	Accuse       *bool  `json:"accuse"`
 }
 

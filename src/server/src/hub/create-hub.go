@@ -251,6 +251,24 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 		}
 
 		h.broadcast <- &msg
+
+	case "voted":
+		d := EmptyData{
+			Command: "voted",
+		}
+
+		j, err := json.Marshal(&d)
+		if err != nil {
+			log.Printf("Failed to marshall data: %v\n", d)
+			return
+		}
+
+		msg := gameMessage{
+			gameId:  gameId,
+			message: j,
+		}
+
+		h.broadcast <- &msg
 	}
 }
 

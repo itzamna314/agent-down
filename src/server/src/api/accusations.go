@@ -119,25 +119,6 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 		return
 	}
 
-	accusationId := int64(*accusation.Id)
-	accuse := true
-
-	vote := dal.Vote{
-		PlayerId:     accusation.AccuserId,
-		AccusationId: &accusationId,
-		Accuse:       &accuse,
-	}
-
-	_, err = dal.CreateVote(db, &vote)
-
-	if err != nil {
-		log.Printf("Failed to create accuser's vote: %s", err)
-		http.Error(w, "Failed to create accusation", 500)
-		return
-	}
-
-	*accusation.VotesFor = 1
-
 	body.Accusation = *accusation
 
 	j, err := json.Marshal(body)

@@ -22,7 +22,13 @@ export default Ember.Controller.extend({
 
             sock.on('voted', function(/*o*/){
             	console.log('voted');
-                this.get('model').reload();
+                this.get('model').reload().then(function(accusation){
+                    if ( accusation.get('state') === 'guilty' ) {
+                        this.transitionToRoute('results');
+                    } else if (accusation.get('state') === 'innocent' ) {
+                        this.transitionToRoute('active');
+                    }
+                }.bind(this));
             }.bind(this));
 
         }.bind(this), function(reason) {
@@ -30,23 +36,29 @@ export default Ember.Controller.extend({
             this.transitionToRoute('index');
         }.bind(this));
     },
-    actions:{
-        vote:function(isGuilty){
-            var gs = this.get('gameState');
-            var sock = this.get('socket');
+    vote: function(isGuilty){
+        var gs = this.get('gameState');
+        var sock = this.get('socket');
 
-            gs.vote(this.get('store'), isGuilty).then(function(vote){
-                sock.writeSocket({
-                    name: 'voted',
-                    data: {
-                        accusation: this.get('model.id'),
-                        accuse: isGuilty
-                    }
-                });
-            }.bind(this),
-            function(reason){
-                alert('Could not vote: ' + reason);
-            }.bind(this));
+        gs.vote(this.get('store'), this.get('model'), isGuilty).then(function(vote){
+            sock.writeSocket({
+                name: 'voted',
+                data: {
+                    accusation: this.get('model.id'),
+                    accuse: isGuilty
+                }
+            });
+        }.bind(this),
+        function(reason){
+            alert('Could not vote: ' + reason);
+        }.bind(this));
+    },
+    actions:{
+        voteGuilty: function() {
+            this.vote(true);
+        },
+        voteInnocent: function() {
+            this.vote(false);
         }
     }
 });

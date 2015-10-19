@@ -103,12 +103,12 @@ export default Ember.Service.extend({
             });
         }.bind(this));
     },
-    accuse: function(store, player){
+    accuse: function(store, accused){
         return new Ember.RSVP.Promise(function(resolve, reject){
             store.createRecord('accusation', {
                 game: this.get('game'),
                 accuser: this.get('player'),
-                accused: player
+                accused: accused
             }).save().then(function(accusation){
                 this.get('player').reload().then(function(){
                     this.set('player.accusationMade', accusation);
@@ -119,6 +119,13 @@ export default Ember.Service.extend({
                 reject(reason);
             });
         }.bind(this));
+    },
+    vote: function(store, accusation, isGuilty) {
+        return store.createRecord('vote', {
+                accusation: accusation,
+                player: this.get('player'),
+                accuse: isGuilty
+            }).save();
     },
     reset: function(resetPlayer) {
         return new Ember.RSVP.Promise(function(resolve /*, reject*/){

@@ -1,6 +1,6 @@
 {{vote-banner accusation=model me=gameState.player}}
 
-{{vote-player accusation=model me=gameState.player}}
+{{vote-player accusation=model me=gameState.player innocent=(action 'voteInnocent') guilty=(action 'voteGuilty')}}
 
 {{vote-tally-list accusation=model me=gameState.player}}
 

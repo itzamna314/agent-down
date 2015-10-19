@@ -35,7 +35,6 @@ create table if not exists player(
     gameId int null, FOREIGN KEY (gameId) references game (id),
     isSpy boolean null,
     isCreator boolean null,
-    hasAccused boolean null,
     createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,

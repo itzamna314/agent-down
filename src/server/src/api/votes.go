@@ -79,7 +79,35 @@ func findVotes(w http.ResponseWriter, db *sql.DB, url *url.URL) {
 }
 
 func fetchVote(w http.ResponseWriter, db *sql.DB, id int) {
-	http.Error(w, "Method not implemented", 405)
+	db, err := dal.Open()
+
+	if err != nil {
+		log.Printf("Failed to open db: %s\n", err)
+		http.Error(w, "Failed to connect to db", 500)
+		return
+	}
+
+	defer db.Close()
+
+	vote, err := dal.FetchVote(db, int64(id))
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to query db: %s", err), 500)
+		return
+	}
+
+	resp := voteRequest{
+		Vote: *vote,
+	}
+
+	j, err := json.Marshal(resp)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal to json: %v", resp), 500)
+		return
+	}
+
+	w.Write(j)
 }
 
 func createVote(w http.ResponseWriter, db *sql.DB, b []byte) {
@@ -114,6 +142,8 @@ func createVote(w http.ResponseWriter, db *sql.DB, b []byte) {
 		http.Error(w, "Failed to marshal to json", 500)
 		return
 	}
+
+	dal.CheckAccusationState(db, int(*vote.AccusationId))
 
 	w.Write(j)
 }
