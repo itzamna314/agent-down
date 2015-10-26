@@ -41,14 +41,7 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 		return nil, errors.New("Accuser, Accused, and Game are required")
 	}
 
-	tx, err := db.Begin()
-
-	if err != nil {
-		log.Printf("Failed to open transaction")
-		return nil, err
-	}
-
-	result, err := tx.Exec(
+	result, err := db.Exec(
 		`INSERT INTO accusation( time
 			                   , accuserId
 			                   , accusedId
@@ -71,30 +64,16 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	)
 
 	if err != nil {
+		log.Printf("Failed to create accusation for game %d\n", a.GameId)
 		return nil, err
 	}
 
 	id, err := result.LastInsertId()
 
 	if err != nil {
+		log.Printf("Failed to get last inserted id from accusation\n")
 		return nil, err
 	}
-
-	vote := Vote{
-		PlayerId:     a.AccuserId,
-		AccusationId: &id,
-		Accuse:       new(bool),
-	}
-
-	*vote.Accuse = true
-
-	_, err = CreateVote(db, &vote, tx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	tx.Commit()
 
 	return FetchAccusation(db, id)
 }
@@ -103,12 +82,11 @@ func CheckAccusationState(db *sql.DB, id int) (string, error) {
 	row := db.QueryRow(
 		`SELECT COUNT(p.id) AS numPlayers
               , COALESCE(SUM(CASE WHEN pa.id IS NOT NULL THEN 1 ELSE 0 END),0) AS numVotes
-              , COALESCE(SUM(CASE WHEN pa.accuse ))
-              , COALESCE(SUM(pa.accuse), 0)
+              , COALESCE(SUM(pa.accuse)) AS numGuilty
            FROM player p 
            JOIN game g ON g.id = p.gameId
            JOIN accusation a ON a.gameId = g.id
-      LEFT JOIN playerAccusation pa ON pa.playerId = p.id
+      LEFT JOIN playerAccusation pa ON pa.playerId = p.id AND pa.accusationId = a.id
           WHERE a.id=?`, id)
 
 	numPlayers, numVotes, numGuilty := new(int), new(int), new(int)
@@ -131,11 +109,13 @@ func CheckAccusationState(db *sql.DB, id int) (string, error) {
 		}
 
 		_, err := db.Exec(
-			`UPDATE a
-			    SET a.state = ?
-			      , a.modifiedOn=CURRENT_TIMESTAMP
-			      , a.modifiedBy='dal:CheckAccusationState()'`,
-			state)
+			`UPDATE accusation
+			    SET state = ?
+			      , modifiedOn=CURRENT_TIMESTAMP
+			      , modifiedBy='dal:CheckAccusationState()'
+			  WHERE id=?`,
+			state,
+			id)
 
 		if err != nil {
 			return "", err

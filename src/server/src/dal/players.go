@@ -7,7 +7,14 @@ import (
 )
 
 func FindAllPlayers(db *sql.DB) ([]*Player, error) {
-	rows, err := db.Query("SELECT id, name, gameId, isSpy, isCreator FROM player")
+	rows, err := db.Query(`SELECT p.id
+		                        , p.name
+		                        , p.gameId
+		                        , p.isSpy
+		                        , p.isCreator 
+		                        , a.id as accusationMade
+		                     FROM player p
+		                LEFT JOIN accusation a on a.accuserId = p.id`)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +86,15 @@ func CreatePlayer(db *sql.DB, p *Player) (*Player, error) {
 }
 
 func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
-	row := db.QueryRow("SELECT id, name, gameId, isSpy, isCreator FROM player WHERE id=?", id)
+	row := db.QueryRow(`SELECT p.id
+		                     , p.name
+		                     , p.gameId
+		                     , p.isSpy
+		                     , p.isCreator 
+		                     , a.id as accusationMade
+		                  FROM player p
+		             LEFT JOIN accusation a on a.accuserId = p.id
+		                 WHERE gameId=?`, id)
 	dto := newPlayerDto()
 	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator)
 	if err != nil {

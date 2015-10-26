@@ -42,6 +42,15 @@ export default Ember.Controller.extend({
                         accusation: accusation.get('id')
                     }
                 });
+
+                gs.vote(this.get('store'), accusation, true).then(function(/*acc*/){
+                    sock.writeSocket({
+                        name: 'voted',
+                        data: {
+                            accusation: accusation.get('id')
+                        }
+                    })
+                });
             }.bind(this),
             function(reason){
                 alert('Could not accuse ' + player.get('name') + ': ' + reason);

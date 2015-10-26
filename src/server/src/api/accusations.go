@@ -49,7 +49,7 @@ func ServeAccusations(w http.ResponseWriter, r *http.Request) {
 		}
 	case "POST":
 		if idErr == nil {
-			http.Error(w, "POST to /id not allowed", 405)
+			checkState(w, db, b, accusationId)
 			return
 		}
 		createAccusation(w, db, b)
@@ -130,6 +130,16 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 	}
 
 	w.Write(j)
+}
+
+func checkState(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
+	state, err := dal.CheckAccusationState(db, id)
+
+	if err != nil {
+		log.Printf("Failed to check state: %s\n", err)
+	}
+
+	http.Error(w, fmt.Sprintf("State: %s", state), 200)
 }
 
 func replaceAccusation(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
