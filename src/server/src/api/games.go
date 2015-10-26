@@ -21,6 +21,21 @@ type gamesRequest struct {
 	Games []dal.Game `json:"games"`
 }
 
+func VotedGuilty(accusationId *int64, db *sql.DB) {
+	realSpy, err := dal.IsRealSpy(db, *accusationId)
+
+	if err != nil {
+		log.Printf("Failed to determine real spy\n")
+		return
+	}
+
+	if realSpy {
+		dal.Victory(db, *accusationId, "vote", false)
+	} else {
+		dal.Victory(db, *accusationId, "vote", true)
+	}
+}
+
 func ServeGames(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/api/games"):]
 	if len(id) > 0 {

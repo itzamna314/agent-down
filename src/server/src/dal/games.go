@@ -31,6 +31,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 	row := db.QueryRow(`SELECT g.id
 		                     , g.locationId
 		                     , g.state
+		                     , g.victoryType
 		                     , g.secondsRemaining
 		                     , g.latitude
 		                     , g.longitude
@@ -46,7 +47,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 		             LEFT JOIN player accuser on accuser.id = acc.accuserId
 		                 WHERE g.id = ?`,
 		id)
-	err := row.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accusedId, g.accuserId)
+	err := row.Scan(g.id, g.locationId, g.state, g.victoryType, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accusedId, g.accuserId)
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +170,48 @@ func RemoveGame(db *sql.DB, id int64) error {
 	_, err = db.Exec(`DELETE FROM game
 		                    WHERE id = ?`,
 		id)
+
+	return err
+}
+
+func IsRealSpy(db *sql.DB, accusationId int64) (bool, error) {
+	row := db.QueryRow(`SELECT a.accusedId
+		                          , p.id as spyId
+	                           FROM accusation a 
+                               JOIN game g ON g.id = a.gameId
+                               JOIN player p ON p.gameId = g.id
+		                      WHERE a.id=?
+                                AND p.isSpy = 1`,
+		accusationId)
+
+	accusedId, spyId := new(int), new(int)
+
+	err := row.Scan(accusedId, spyId)
+
+	if err != nil {
+		return false, err
+	}
+
+	return *accusedId == *spyId, nil
+}
+
+func Victory(db *sql.DB, accusationId int64, victoryType string, spyWins bool) error {
+	var state string
+
+	if spyWins {
+		state = "spyWins"
+	} else {
+		state = "playersWin"
+	}
+
+	_, err := db.Exec(`UPDATE game g
+		                 JOIN accusation a on a.gameId = g.id
+		                  SET g.state=?
+		                    , g.victoryType=?
+		                    , g.modifiedOn=CURRENT_TIMESTAMP
+		                    , g.modifiedBy='dal:Victory()'
+		                WHERE a.id=?`,
+		state, victoryType, accusationId)
 
 	return err
 }

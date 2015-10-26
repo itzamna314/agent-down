@@ -8,6 +8,7 @@ type Game struct {
 	Id               *int     `json:"id,string"`
 	LocationId       *int64   `json:"location,string"`
 	State            *string  `json:"state"`
+	VictoryType      *string  `json:"victoryType"`
 	SecondsRemaining *int64   `json:"secondsRemaining"`
 	Latitude         *float64 `json:"latitude"`
 	Longitude        *float64 `json:"longitude"`
@@ -22,6 +23,7 @@ type gameDto struct {
 	id               *int
 	locationId       *sql.NullInt64
 	state            *string
+	victoryType      *string
 	secondsRemaining *int64
 	latitude         *sql.NullFloat64
 	longitude        *sql.NullFloat64
@@ -37,6 +39,7 @@ func newGameDto() *gameDto {
 		id:               new(int),
 		locationId:       new(sql.NullInt64),
 		state:            new(string),
+		victoryType:      new(string),
 		secondsRemaining: new(int64),
 		latitude:         new(sql.NullFloat64),
 		longitude:        new(sql.NullFloat64),
@@ -53,6 +56,7 @@ func (g *gameDto) ToGame() *Game {
 		Id:               g.id,
 		LocationId:       IntOrNull(g.locationId),
 		State:            g.state,
+		VictoryType:      g.victoryType,
 		SecondsRemaining: g.secondsRemaining,
 		Latitude:         FloatOrNull(g.latitude),
 		Longitude:        FloatOrNull(g.longitude),
