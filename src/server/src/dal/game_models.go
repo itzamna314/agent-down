@@ -65,7 +65,7 @@ func (g *gameDto) ToGame() *Game {
 }
 
 type GameClock struct {
-	Id               *int   `json:"id,string"`
+	GameId           *int   `json:"gameId,string"`
 	SecondsRemaining *int64 `json:"secondsRemaining"`
 	IsRunning        *bool  `json:"isRunning"`
 }

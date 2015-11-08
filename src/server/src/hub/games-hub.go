@@ -73,7 +73,7 @@ func (h *gamesHub) Run() {
 				}
 			}
 		case gc := <-dal.GameClockEvents:
-			h.broadcastGameMessage(gc, int(gc.GameId))
+			h.broadcastGameMessage(gc, *gc.GameId)
 		}
 	}
 }

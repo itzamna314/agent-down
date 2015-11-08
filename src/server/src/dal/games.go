@@ -232,7 +232,7 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 	// If the clock isn't running, secondsRemaining MUST be accurate
 	if isRunning == nil || !*isRunning || !g.secondsRemaining.Valid || !g.clockStartTime.Valid {
 		return &GameClock{
-			Id:               g.id,
+			GameId:           g.id,
 			SecondsRemaining: IntOrNull(g.secondsRemaining),
 			IsRunning:        isRunning,
 		}, nil
@@ -253,7 +253,7 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 	remaining := s - int64(now.Sub(startTime).Seconds())
 
 	return &GameClock{
-		Id:               g.id,
+		GameId:           g.id,
 		SecondsRemaining: &remaining,
 		IsRunning:        isRunning,
 	}, nil
@@ -268,9 +268,19 @@ func StartGameClock(db *sql.DB, gameId int64) error {
 		             WHERE id = ?`,
 		gameId)
 
-	publishClockEvent(gameId, true)
+	if err != nil {
+		return err
+	}
 
-	return err
+	clock, err := GetGameClock(db, gameId)
+
+	if err != nil {
+		return err
+	}
+
+	publishClockEvent(clock)
+
+	return nil
 }
 
 func StopGameClock(db *sql.DB, gameId int64) error {
@@ -282,25 +292,25 @@ func StopGameClock(db *sql.DB, gameId int64) error {
 		             WHERE id = ?`,
 		gameId)
 
-	publishClockEvent(gameId, false)
+	if err != nil {
+		return err
+	}
 
-	return err
+	clock, err := GetGameClock(db, gameId)
+
+	if err != nil {
+		return err
+	}
+
+	publishClockEvent(clock)
+
+	return nil
 }
 
 // Allows us to publish clock events to a single subscriber
-type GameClockEvent struct {
-	GameId    int64
-	IsRunning bool
-}
+var GameClockEvents chan *GameClock = make(chan *GameClock)
 
-var GameClockEvents chan *GameClockEvent = make(chan *GameClockEvent)
-
-func publishClockEvent(gameId int64, isRunning bool) {
-	evt := &GameClockEvent{
-		GameId:    gameId,
-		IsRunning: isRunning,
-	}
-
+func publishClockEvent(evt *GameClock) {
 	select {
 	case GameClockEvents <- evt:
 	default:
