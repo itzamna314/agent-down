@@ -1,12 +1,14 @@
 package hub
 
 import (
+	"dal"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 )
 
-type createHub struct {
+type gamesHub struct {
 	// Each game is represented with a hub
 	games map[int]*hub
 	// Track which connection belongs to which game
@@ -27,7 +29,7 @@ type gameMessage struct {
 	message []byte
 }
 
-var Create = createHub{
+var Games = gamesHub{
 	games:       make(map[int]*hub),
 	connections: make(map[*connection]int),
 	register:    make(chan *gameConnection),
@@ -35,7 +37,7 @@ var Create = createHub{
 	broadcast:   make(chan *gameMessage),
 }
 
-func (h *createHub) Run() {
+func (h *gamesHub) Run() {
 	for {
 		select {
 		case g := <-h.register:
@@ -70,11 +72,13 @@ func (h *createHub) Run() {
 					delete(h.games, m.gameId)
 				}
 			}
+		case gc := <-dal.GameClockEvents:
+			h.broadcastGameMessage(gc, int(gc.GameId))
 		}
 	}
 }
 
-func (h *createHub) cleanup(c *connection) {
+func (h *gamesHub) cleanup(c *connection) {
 	h.unregister <- c
 	c.ws.Close()
 }
@@ -103,7 +107,7 @@ type EmptyData struct {
 	Command string `json:"command"`
 }
 
-func (h *createHub) handle(c *connection, msg []byte, t int) {
+func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 	var command GameCommand
 	if err := json.Unmarshal(msg, &command); err != nil {
 		log.Println(err)
@@ -111,7 +115,7 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 		return
 	}
 
-	gameId, ok := Create.connections[c]
+	gameId, ok := Games.connections[c]
 	if !ok {
 		log.Println("Connection was not registered")
 		return
@@ -125,51 +129,38 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 		}
 		h.handleCreated(&d)
 	case "joined":
-		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		playerId, err := h.parsePlayerId(command)
+
 		if err != nil {
-			log.Println("Illegal player id: %s\n", i)
+			log.Printf("Failed to join game %d: %s\n", gameId, err)
 			return
 		}
 
 		d := GameData{
 			Command:  "joined",
-			PlayerId: int64(i),
+			PlayerId: *playerId,
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Println("Failed to marshall data: %v\n", d)
-			return
-		}
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to join game %d: %s\n", gameId, err)
 		}
 
-		h.broadcast <- &msg
 	case "left":
-		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		playerId, err := h.parsePlayerId(command)
+
 		if err != nil {
-			log.Println("Illegal player id: %s\n", i)
+			log.Printf("Failed to join game %d: %s\n", gameId, err)
 			return
 		}
 
 		d := GameData{
 			Command:  "left",
-			PlayerId: int64(i),
+			PlayerId: *playerId,
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Println("Failed to marshall data: %v\n", d)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 		//h.unregister <- c
 
 	case "abandoned":
@@ -177,61 +168,36 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			Command: "abandoned",
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Printf("Failed to marshall data: %v\n", d)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 		//h.unregister <- c
 
 	case "kicked":
-		i, err := strconv.Atoi(command.Data["playerId"].(string))
+		playerId, err := h.parsePlayerId(command)
+
 		if err != nil {
-			log.Println("Illegal player id: %s\n", i)
+			log.Printf("Failed to join game %d: %s\n", gameId, err)
 			return
 		}
 
 		d := GameData{
 			Command:  "kicked",
-			PlayerId: int64(i),
+			PlayerId: *playerId,
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Println("Failed to marshall data: %v\n", d)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
-
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 
 	case "started":
 		d := EmptyData{
 			Command: "started",
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Printf("Failed to marshall data: %v\n", d)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
-
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 
 	case "accused":
 		d := AccuseData{
@@ -239,43 +205,55 @@ func (h *createHub) handle(c *connection, msg []byte, t int) {
 			AccusationId: command.Data["accusation"].(string),
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Println("Error: Failed to marshal data: %v.  %v\n", d, err)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
-
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 
 	case "voted":
 		d := EmptyData{
 			Command: "voted",
 		}
 
-		j, err := json.Marshal(&d)
-		if err != nil {
-			log.Printf("Failed to marshall data: %v\n", d)
-			return
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to handle voted: %v. %v\n", d, err)
 		}
 
-		msg := gameMessage{
-			gameId:  gameId,
-			message: j,
-		}
-
-		h.broadcast <- &msg
 	}
 }
 
+func (h *gamesHub) parsePlayerId(command GameCommand) (*int64, error) {
+	i, err := strconv.Atoi(command.Data["playerId"].(string))
+
+	if err != nil {
+		return nil, fmt.Errorf("Illegal player id: %s\n", i)
+	}
+
+	typedI := int64(i)
+
+	return &typedI, nil
+}
+
+func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
+	j, err := json.Marshal(&d)
+
+	if err != nil {
+		return fmt.Errorf("Failed to marshall data: %v\n", d)
+	}
+
+	msg := gameMessage{
+		gameId:  gameId,
+		message: j,
+	}
+
+	h.broadcast <- &msg
+
+	return nil
+}
+
 // Broadcast to join hub
-func (h *createHub) handleCreated(data *CreateData) {
+func (h *gamesHub) handleCreated(data *CreateData) {
 	if b, err := json.Marshal(data); err == nil {
-		Join.h.broadcast <- b
+		Lobby.h.broadcast <- b
 	} else {
 		log.Println(err)
 	}

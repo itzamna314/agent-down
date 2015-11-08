@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 func CreateGame(db *sql.DB, g *Game) (*Game, error) {
@@ -32,7 +33,6 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 		                     , g.locationId
 		                     , g.state
 		                     , g.victoryType
-		                     , g.secondsRemaining
 		                     , g.latitude
 		                     , g.longitude
 		                     , cr.id as creatorId
@@ -47,7 +47,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 		             LEFT JOIN player accuser on accuser.id = acc.accuserId
 		                 WHERE g.id = ?`,
 		id)
-	err := row.Scan(g.id, g.locationId, g.state, g.victoryType, g.secondsRemaining, g.latitude, g.longitude, g.creatorId, g.spyId, g.accusedId, g.accuserId)
+	err := row.Scan(g.id, g.locationId, g.state, g.victoryType, g.latitude, g.longitude, g.creatorId, g.spyId, g.accusedId, g.accuserId)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,6 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
 		                        , g.state
-		                        , g.secondsRemaining
 		                        , g.latitude
 		                        , g.longitude
 		                        , cr.id as creatorId
@@ -91,7 +90,7 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 	for rows.Next() {
 		g := newGameDto()
 
-		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId)
+		err := rows.Scan(g.id, g.locationId, g.state, g.latitude, g.longitude, g.creatorId)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +105,6 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
 		                        , g.state
-		                        , g.secondsRemaining
 		                        , g.latitude
 		                        , g.longitude
 		                        , cr.id as creatorId
@@ -123,7 +121,7 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 
 	for rows.Next() {
 		g := newGameDto()
-		err := rows.Scan(g.id, g.locationId, g.state, g.secondsRemaining, g.latitude, g.longitude, g.creatorId)
+		err := rows.Scan(g.id, g.locationId, g.state, g.latitude, g.longitude, g.creatorId)
 		if err != nil {
 			return nil, err
 		}
@@ -138,13 +136,12 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 	res, err := db.Exec(`UPDATE game 
 	  	                    SET locationId = ?
 		                      , state = ?
-		                      , secondsRemaining = ?
 		                      , latitude = ?
 		                      , longitude = ?
 		                      , modifiedOn = CURRENT_TIMESTAMP
 		                      , modifiedBy = ?
 		                  WHERE id = ?`,
-		g.LocationId, g.State, g.SecondsRemaining, g.Latitude, g.Longitude, "dal:ReplaceGame()", id)
+		g.LocationId, g.State, g.Latitude, g.Longitude, "dal:ReplaceGame()", id)
 
 	if err != nil {
 		return nil, err
@@ -214,4 +211,98 @@ func Victory(db *sql.DB, accusationId int64, victoryType string, spyWins bool) e
 		state, victoryType, accusationId)
 
 	return err
+}
+
+func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
+	g := newGameClockDto()
+	row := db.QueryRow(`SELECT g.id
+		                     , g.secondsRemaining
+		                     , g.clockStartTime 
+		                     , g.clockIsRunning as isRunning
+		                  FROM game g
+		                 WHERE g.id = ?`,
+		gameId)
+
+	if err := row.Scan(g.id, g.secondsRemaining, g.clockStartTime, g.isRunning); err != nil {
+		return nil, err
+	}
+
+	isRunning := BoolOrNull(g.isRunning)
+
+	// If the clock isn't running, secondsRemaining MUST be accurate
+	if isRunning == nil || !*isRunning || !g.secondsRemaining.Valid || !g.clockStartTime.Valid {
+		return &GameClock{
+			Id:               g.id,
+			SecondsRemaining: IntOrNull(g.secondsRemaining),
+			IsRunning:        isRunning,
+		}, nil
+	}
+
+	var nowTicks *sql.NullInt64 = new(sql.NullInt64)
+	row = db.QueryRow(`SELECT CURRENT_TIMESTAMP as nowTicks`)
+
+	if err := row.Scan(nowTicks); err != nil || !nowTicks.Valid {
+		return nil, err
+	}
+
+	s := g.secondsRemaining.Int64
+
+	now := time.Unix(nowTicks.Int64, 0)
+	startTime := time.Unix(g.clockStartTime.Int64, 0)
+
+	remaining := s - int64(now.Sub(startTime).Seconds())
+
+	return &GameClock{
+		Id:               g.id,
+		SecondsRemaining: &remaining,
+		IsRunning:        isRunning,
+	}, nil
+}
+
+func StartGameClock(db *sql.DB, gameId int64) error {
+	_, err := db.Exec(`UPDATE game
+		               SET clockStartTime = CURRENT_TIMESTAMP
+		                 , clockIsRunning = true
+		                 , modifiedOn = CURRENT_TIMESTAMP
+		                 , modifiedBy = 'dal:StartGameClock()'
+		             WHERE id = ?`,
+		gameId)
+
+	publishClockEvent(gameId, true)
+
+	return err
+}
+
+func StopGameClock(db *sql.DB, gameId int64) error {
+	_, err := db.Exec(`UPDATE game
+		               SET secondsRemaining = TIMESTAMPDIFF(SECOND, clockStartTime, CURRENT_TIMESTAMP)
+		                 , clockIsRunning = false
+		                 , modifiedOn = CURRENT_TIMESTAMP
+		                 , modifiedBy = 'dal:StopGameClock()'
+		             WHERE id = ?`,
+		gameId)
+
+	publishClockEvent(gameId, false)
+
+	return err
+}
+
+// Allows us to publish clock events to a single subscriber
+type GameClockEvent struct {
+	GameId    int64
+	IsRunning bool
+}
+
+var GameClockEvents chan *GameClockEvent = make(chan *GameClockEvent)
+
+func publishClockEvent(gameId int64, isRunning bool) {
+	evt := &GameClockEvent{
+		GameId:    gameId,
+		IsRunning: isRunning,
+	}
+
+	select {
+	case GameClockEvents <- evt:
+	default:
+	}
 }

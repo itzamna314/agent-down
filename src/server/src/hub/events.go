@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func ServeJoin(w http.ResponseWriter, r *http.Request) {
+func ServeLobby(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -17,12 +17,12 @@ func ServeJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	Join.h.register <- c
+	Lobby.h.register <- c
 	go c.writePump()
-	c.readPump(Join.cleanup, Join.handle)
+	c.readPump(Lobby.cleanup, Lobby.handle)
 }
 
-func ServeCreate(w http.ResponseWriter, r *http.Request) {
+func ServeGames(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -43,8 +43,8 @@ func ServeCreate(w http.ResponseWriter, r *http.Request) {
 
 	c := &connection{send: make(chan []byte, 256), ws: ws}
 	gc := &gameConnection{connection: c, gameId: gameId}
-	Create.register <- gc
+	Games.register <- gc
 
 	go c.writePump()
-	c.readPump(Create.cleanup, Create.handle)
+	c.readPump(Games.cleanup, Games.handle)
 }
