@@ -49,7 +49,7 @@ export default Ember.Controller.extend({
                         data: {
                             accusation: accusation.get('id')
                         }
-                    })
+                    });
                 });
             }.bind(this),
             function(reason){

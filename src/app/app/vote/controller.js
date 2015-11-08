@@ -40,7 +40,7 @@ export default Ember.Controller.extend({
         var gs = this.get('gameState');
         var sock = this.get('socket');
 
-        gs.vote(this.get('store'), this.get('model'), isGuilty).then(function(vote){
+        gs.vote(this.get('store'), this.get('model'), isGuilty).then(function(/*vote*/){
             sock.writeSocket({
                 name: 'voted',
                 data: {

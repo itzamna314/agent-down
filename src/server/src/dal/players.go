@@ -37,7 +37,7 @@ func FindAllPlayers(db *sql.DB) ([]*Player, error) {
 }
 
 func FindGamePlayers(db *sql.DB, gameId int64) ([]int64, error) {
-	rows, err := db.Query("SELECT id FROM player WHERE gameId=?", gameId)
+	rows, err := db.Query("SELECT p.id FROM player p WHERE p.gameId=?", gameId)
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +94,9 @@ func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
 		                     , a.id as accusationMade
 		                  FROM player p
 		             LEFT JOIN accusation a on a.accuserId = p.id
-		                 WHERE gameId=?`, id)
+		                 WHERE p.id=?`, id)
 	dto := newPlayerDto()
-	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator)
+	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator, dto.accusationMade)
 	if err != nil {
 		return nil, err
 	}

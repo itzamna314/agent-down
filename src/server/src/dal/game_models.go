@@ -23,7 +23,7 @@ type gameDto struct {
 	id               *int
 	locationId       *sql.NullInt64
 	state            *string
-	victoryType      *string
+	victoryType      *sql.NullString
 	secondsRemaining *int64
 	latitude         *sql.NullFloat64
 	longitude        *sql.NullFloat64
@@ -39,7 +39,7 @@ func newGameDto() *gameDto {
 		id:               new(int),
 		locationId:       new(sql.NullInt64),
 		state:            new(string),
-		victoryType:      new(string),
+		victoryType:      new(sql.NullString),
 		secondsRemaining: new(int64),
 		latitude:         new(sql.NullFloat64),
 		longitude:        new(sql.NullFloat64),
@@ -56,7 +56,7 @@ func (g *gameDto) ToGame() *Game {
 		Id:               g.id,
 		LocationId:       IntOrNull(g.locationId),
 		State:            g.state,
-		VictoryType:      g.victoryType,
+		VictoryType:      StringOrNull(g.victoryType),
 		SecondsRemaining: g.secondsRemaining,
 		Latitude:         FloatOrNull(g.latitude),
 		Longitude:        FloatOrNull(g.longitude),

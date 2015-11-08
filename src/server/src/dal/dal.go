@@ -44,6 +44,14 @@ func BoolOrNull(b *sql.NullInt64) *bool {
 	return nil
 }
 
+func StringOrNull(s *sql.NullString) *string {
+	if s.Valid {
+		return &s.String
+	}
+
+	return nil
+}
+
 func NullBool(b *bool) *sql.NullBool {
 	if b == nil {
 		return &sql.NullBool{

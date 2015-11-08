@@ -122,7 +122,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             }.bind(this));
         }
     }),
-    isCreator: Ember.computed('gameState', function(){
+    isCreator: Ember.computed('gameState.player', function(){
         return this.get('gameState.player.isCreator');
     }),
     origin: Ember.computed('document.location.origin', function(){
