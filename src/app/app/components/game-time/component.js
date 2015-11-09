@@ -30,7 +30,7 @@ export default Ember.Component.extend({
 			Ember.run.later(this, this.tick, 1000);
 		} 
 		else {
-			alert('time up!');
+			console.log('time up')
 		}
 	},
 });

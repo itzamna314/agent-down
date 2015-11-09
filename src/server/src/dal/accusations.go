@@ -3,6 +3,7 @@ package dal
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
@@ -41,7 +42,38 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 		return nil, errors.New("Accuser, Accused, and Game are required")
 	}
 
-	result, err := db.Exec(
+	tx, err := db.Begin()
+
+	if err != nil {
+		return nil, errors.New("Failed to begin transaction")
+	}
+
+	stateRow := tx.QueryRow(
+		`SELECT state
+		   FROM game
+		  WHERE id=?`,
+		a.GameId)
+
+	var state string
+	if err := stateRow.Scan(&state); err != nil || state != "inProgress" {
+		tx.Rollback()
+		return nil, fmt.Errorf("Illegal game state %s: %s\n", state, err)
+	}
+
+	stateResult, err := tx.Exec(
+		`UPDATE game
+		    SET state='accusing'
+		      , modifiedOn = CURRENT_TIMESTAMP
+		      , modifiedBy = 'dal:CreateAccusation()'
+		  WHERE id=?`,
+		a.GameId)
+
+	if ra, _ := stateResult.RowsAffected(); err != nil || ra != 1 {
+		tx.Rollback()
+		return nil, fmt.Errorf("Failed to set game state: %n", err)
+	}
+
+	result, err := tx.Exec(
 		`INSERT INTO accusation( time
 			                   , accuserId
 			                   , accusedId
@@ -52,14 +84,13 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 			                   , ?
 			          	       , ?
 			          	       , ?
-			          	       , ?
+			          	       , 'dal:CreateAccusation()'
 			          	    FROM game
 			          	   WHERE id = ?
 			           `,
 		a.AccuserId,
 		a.AccusedId,
 		a.GameId,
-		"dal:CreateAccusation()",
 		a.GameId,
 	)
 
@@ -75,10 +106,14 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 		return nil, err
 	}
 
+	tx.Commit()
+
+	StopGameClock(db, *a.GameId)
+
 	return FetchAccusation(db, id)
 }
 
-func CheckAccusationState(db *sql.DB, id int) (string, error) {
+func UpdateAccusationState(db *sql.DB, id int) (string, error) {
 	row := db.QueryRow(
 		`SELECT COUNT(p.id) AS numPlayers
               , COALESCE(SUM(CASE WHEN pa.id IS NOT NULL THEN 1 ELSE 0 END),0) AS numVotes
@@ -112,13 +147,40 @@ func CheckAccusationState(db *sql.DB, id int) (string, error) {
 			`UPDATE accusation
 			    SET state = ?
 			      , modifiedOn=CURRENT_TIMESTAMP
-			      , modifiedBy='dal:CheckAccusationState()'
+			      , modifiedBy='dal:UpdateAccusationState()'
 			  WHERE id=?`,
 			state,
 			id)
 
+		gameRows, err := db.Query(
+			`UPDATE game g
+			   JOIN accusation a on a.gameId = g.id
+			    SET g.state = 'inProgress'
+			      , g.modifiedOn = CURRENT_TIMESTAMP
+			      , g.modifiedBy = 'dal:UpdateAccusationState()'
+			  WHERE a.id=?;
+
+			  SELECT g.id as gameId
+			    FROM game g
+			    JOIN accusation a on a.gameId = g.id
+			   WHERE a.id=?`,
+			id,
+			id)
+
 		if err != nil {
 			return "", err
+		}
+
+		defer gameRows.Close()
+
+		if state == "innocent" {
+			var gameId int64
+			if !gameRows.Next() {
+				return "", err
+			}
+			if err := gameRows.Scan(&gameId); err == nil {
+				StartGameClock(db, gameId)
+			}
 		}
 
 		return state, nil

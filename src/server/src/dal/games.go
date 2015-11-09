@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 	"time"
 )
 
@@ -238,17 +239,17 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 		}, nil
 	}
 
-	var nowTicks *sql.NullInt64 = new(sql.NullInt64)
+	var nowTicks sql.NullString
 	row = db.QueryRow(`SELECT CURRENT_TIMESTAMP as nowTicks`)
 
-	if err := row.Scan(nowTicks); err != nil || !nowTicks.Valid {
+	if err := row.Scan(&nowTicks); err != nil || !nowTicks.Valid {
 		return nil, err
 	}
 
 	s := g.secondsRemaining.Int64
 
-	now := time.Unix(nowTicks.Int64, 0)
-	startTime := time.Unix(g.clockStartTime.Int64, 0)
+	now, _ := time.Parse(dbDateLayout, nowTicks.String)
+	startTime, _ := time.Parse(dbDateLayout, g.clockStartTime.String)
 
 	remaining := s - int64(now.Sub(startTime).Seconds())
 
@@ -260,6 +261,8 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 }
 
 func StartGameClock(db *sql.DB, gameId int64) error {
+	log.Printf("Starting game clock\n")
+
 	_, err := db.Exec(`UPDATE game
 		               SET clockStartTime = CURRENT_TIMESTAMP
 		                 , clockIsRunning = true
@@ -311,6 +314,7 @@ func StopGameClock(db *sql.DB, gameId int64) error {
 var GameClockEvents chan *GameClock = make(chan *GameClock)
 
 func publishClockEvent(evt *GameClock) {
+	log.Printf("Publishing clock event: %v\n", evt)
 	select {
 	case GameClockEvents <- evt:
 	default:

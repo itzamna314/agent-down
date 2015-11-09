@@ -73,7 +73,7 @@ type GameClock struct {
 type gameClockDto struct {
 	id               *int
 	secondsRemaining *sql.NullInt64
-	clockStartTime   *sql.NullInt64
+	clockStartTime   *sql.NullString
 	isRunning        *sql.NullInt64
 }
 
@@ -81,6 +81,7 @@ func newGameClockDto() *gameClockDto {
 	return &gameClockDto{
 		id:               new(int),
 		secondsRemaining: new(sql.NullInt64),
+		clockStartTime:   new(sql.NullString),
 		isRunning:        new(sql.NullInt64),
 	}
 }

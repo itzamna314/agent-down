@@ -38,6 +38,8 @@ var Games = gamesHub{
 }
 
 func (h *gamesHub) Run() {
+	go h.listenForClockEvents()
+
 	for {
 		select {
 		case g := <-h.register:
@@ -71,9 +73,26 @@ func (h *gamesHub) Run() {
 					close(g.broadcast)
 					delete(h.games, m.gameId)
 				}
+			} else {
+				log.Printf("Failed to broadcast message: %v\n", m)
 			}
-		case gc := <-dal.GameClockEvents:
-			h.broadcastGameMessage(gc, *gc.GameId)
+		}
+	}
+}
+
+func (h *gamesHub) listenForClockEvents() {
+	for {
+		select {
+		case c := <-dal.GameClockEvents:
+			d := ClockData{
+				Command:          "clock",
+				SecondsRemaining: int(*c.SecondsRemaining),
+				IsRunning:        *c.IsRunning,
+			}
+
+			if err := h.broadcastGameMessage(d, *c.GameId); err != nil {
+				log.Printf("Failed to broadcast message: %s\n", err)
+			}
 		}
 	}
 }
@@ -105,6 +124,12 @@ type AccuseData struct {
 
 type EmptyData struct {
 	Command string `json:"command"`
+}
+
+type ClockData struct {
+	Command          string `json:"command"`
+	SecondsRemaining int    `json:"secondsRemaining"`
+	IsRunning        bool   `json:"isRunning"`
 }
 
 func (h *gamesHub) handle(c *connection, msg []byte, t int) {
@@ -236,7 +261,10 @@ func (h *gamesHub) parsePlayerId(command GameCommand) (*int64, error) {
 func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
 	j, err := json.Marshal(&d)
 
+	log.Printf("Broadcast game message %d: %s\n", gameId, j)
+
 	if err != nil {
+		log.Printf("Failed to marshal\n")
 		return fmt.Errorf("Failed to marshall data: %v\n", d)
 	}
 
@@ -245,8 +273,11 @@ func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
 		message: j,
 	}
 
+	log.Printf("Writing to broacast channel: %v\n", msg)
+
 	h.broadcast <- &msg
 
+	log.Printf("Wrote to broadcast channel\n")
 	return nil
 }
 

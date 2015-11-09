@@ -133,7 +133,7 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 }
 
 func checkState(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
-	state, err := dal.CheckAccusationState(db, id)
+	state, err := dal.UpdateAccusationState(db, id)
 
 	if err != nil {
 		log.Printf("Failed to check state: %s\n", err)

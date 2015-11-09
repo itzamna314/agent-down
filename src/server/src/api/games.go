@@ -217,6 +217,14 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 			http.Error(w, "Could not assign location", 500)
 			return
 		}
+
+		log.Printf("Starting game clock from API layer")
+
+		err = dal.StartGameClock(db, int64(*g.Id))
+
+		if err != nil {
+			log.Printf("Failed to start clock: %s\n", err)
+		}
 	}
 
 	resp := gamesRequest{
