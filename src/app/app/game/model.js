@@ -7,7 +7,6 @@ var Game = DS.Model.extend({
     location: DS.belongsTo('location', {async: true}),
     state: DS.attr('string'),
     victoryType: DS.attr('string'),
-    secondsRemaining: DS.attr('number'),
     latitude: DS.attr('number'),
     longitude: DS.attr('number')
 });

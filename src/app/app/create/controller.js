@@ -3,60 +3,62 @@ import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
 export default Ember.Controller.extend(GeoLocationMixin, {
     gameState: Ember.inject.service('game-state'),
-    socket: null,
+    socket: Ember.inject.service('game-socket'),
     init: function() {
         var gs = this.get('gameState');
 
-        gs.reloadPlayer(function(playerId){
-            return this.store.findRecord('player', playerId);
-        }.bind(this)).then(function(){}, function(){
-            this.transitionToRoute('index');
-        }.bind(this));
+        gs.reloadPlayer(
+            (playerId) => { return this.store.findRecord('player', playerId); }.then(
+                () => {}, 
+                () => { this.transitionToRoute('index'); }
+            )
+        );
 
-        gs.reloadGame(function(gameId){
-                return this.store.findRecord('game', gameId);
-        }.bind(this)).then(function(game){
-            var id = game.get('id');
-            var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+        gs.reloadGame((gameId) => { return this.store.findRecord('game', gameId); }).then(
+            (game) => {
+                var id = game.get('id');
+                var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
-            sock.on('joined', this, function() {
-                console.log('joined');
-                this.get('model').reload();
-            });
+                sock.on('joined', this, () => {
+                    console.log('joined');
+                    this.get('model').reload();
+                });
 
-            sock.on('left', this, function() {
-                console.log('left');
-                this.get('model').reload();
-            });
+                sock.on('left', this, () => {
+                    console.log('left');
+                    this.get('model').reload();
+                });
 
-            sock.on('kicked', this, function(o) {
-                console.log('kicked');
-                if ( gs.get('player.id') === o.playerId ) {
-                    this.transitionToRoute('join');
-                }
-            });
+                sock.on('kicked', this, (o) => {
+                    console.log('kicked');
+                    if ( gs.get('player.id') === o.playerId ) {
+                        this.transitionToRoute('join');
+                    }
+                });
 
-            sock.on('abandoned', this, function() {
-                var p = gs.get('player');
-                if ( p != null && !p.get('isCreator') ) {
-                    console.log('abandoned');
-                    this.transitionToRoute('join');
-                    this.get('gameState').reset(false);
-                }
-            });
+                sock.on('abandoned', this, () => {
+                    var p = gs.get('player');
+                    if ( p != null && !p.get('isCreator') ) {
+                        console.log('abandoned');
+                        this.transitionToRoute('join');
+                        this.get('gameState').reset(false);
+                    }
+                });
 
-            sock.on('started', this, function() {
-                console.log('started');
-                gs.get('player').reload();
-                gs.get('game').reload();
-                this.transitionToRoute('active');
-            });
+                sock.on('started', this, () => {
+                    console.log('started');
+                    gs.get('player').reload();
+                    gs.get('game').reload();
+                    this.transitionToRoute('active');
+                });
 
-            this.set('socket', sock);
-        }.bind(this), function(reason) {
-            console.log('Error: ' + reason);
-            this.transitionToRoute('index');
-        }.bind(this));
+                this.set('socket', sock);
+            }, 
+            (reason) => {
+                console.log('Error: ' + reason);
+                this.transitionToRoute('index');
+            }
+        );
     },
     actions: {
         startGame: function() {

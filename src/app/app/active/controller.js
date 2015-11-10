@@ -1,8 +1,11 @@
 import Ember from 'ember';
 
+import Clock from 'agent-down/clock/clock';
+
 export default Ember.Controller.extend({
 	gameState: Ember.inject.service('game-state'),
     socket: null,
+    clock: Clock.create(),
     init: function() {
         var gs = this.get('gameState');
 
@@ -24,6 +27,11 @@ export default Ember.Controller.extend({
                 var accusation = o.accusation;
                 this.transitionToRoute('vote', accusation);
             }.bind(this));
+
+            sock.on('clock', o => {
+                this.set('clock.isRunning', o.isRunning);
+                this.set('clock.secondsRemaining', o.secondsRemaining);
+            });
 
         }.bind(this), function(reason) {
             console.log('Error: ' + reason);
