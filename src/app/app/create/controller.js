@@ -8,11 +8,10 @@ export default Ember.Controller.extend(GeoLocationMixin, {
         var gs = this.get('gameState');
 
         gs.reloadPlayer(
-            (playerId) => { return this.store.findRecord('player', playerId); }.then(
+            (playerId) => { return this.store.findRecord('player', playerId); }).then(
                 () => {}, 
                 () => { this.transitionToRoute('index'); }
-            )
-        );
+            );
 
         gs.reloadGame((gameId) => { return this.store.findRecord('game', gameId); }).then(
             (game) => {

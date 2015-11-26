@@ -7,7 +7,7 @@ export default Ember.Service.extend({
 			return;
 		}
 
-		var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+		var sock = this.container.lookup('objects:gameSocket').create({gameId: gameId});
 		this.set('socket', sock);
 	}
 });

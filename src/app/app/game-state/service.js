@@ -194,7 +194,7 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     reloadPlayer: function(playerGetter) {
-        return new Ember.RSVP.Promise(function(resolve, reject){
+        return new Ember.RSVP.Promise((resolve, reject) => {
             var p = this.get('player');
             if ( this.get('player') ) {
                 resolve(p);
@@ -211,7 +211,7 @@ export default Ember.Service.extend({
             else {
                 reject();
             }
-        }.bind(this));
+        });
     },
     gameChanged: function(){
         var game = this.get('game');

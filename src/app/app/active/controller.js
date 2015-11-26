@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-import Clock from 'agent-down/clock/clock';
+import Clock from 'agent-down/clock/service';
 
 export default Ember.Controller.extend({
 	gameState: Ember.inject.service('game-state'),
