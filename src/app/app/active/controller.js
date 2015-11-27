@@ -29,8 +29,8 @@ export default Ember.Controller.extend({
             }.bind(this));
 
             sock.on('clock', o => {
-                this.set('clock.isRunning', o.isRunning);
                 this.set('clock.secondsRemaining', o.secondsRemaining);
+                this.set('clock.isRunning', o.isRunning);
             });
 
         }.bind(this), function(reason) {
