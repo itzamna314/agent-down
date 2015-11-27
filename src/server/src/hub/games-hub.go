@@ -243,6 +243,27 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 			log.Printf("Failed to handle voted: %v. %v\n", d, err)
 		}
 
+	case "clock":
+		conn, err := dal.Open()
+		if err != nil {
+			return
+		}
+
+		clock, err := dal.GetGameClock(conn, int64(gameId))
+
+		if err != nil {
+			return
+		}
+
+		d := ClockData{
+			Command:          "clock",
+			SecondsRemaining: int(*clock.SecondsRemaining),
+			IsRunning:        *clock.IsRunning,
+		}
+
+		if err := h.broadcastGameMessage(d, gameId); err != nil {
+			log.Printf("Failed to broadcast message: %s\n", err)
+		}
 	}
 }
 
