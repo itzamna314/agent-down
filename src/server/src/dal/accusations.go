@@ -143,6 +143,8 @@ func UpdateAccusationState(db *sql.DB, id int) (string, error) {
 			state = "innocent"
 		}
 
+		log.Printf("Accusation resolved as %s\n", state)
+
 		_, err := db.Exec(
 			`UPDATE accusation
 			    SET state = ?
@@ -152,19 +154,19 @@ func UpdateAccusationState(db *sql.DB, id int) (string, error) {
 			state,
 			id)
 
-		gameRows, err := db.Query(
+		_, err = db.Query(
 			`UPDATE game g
 			   JOIN accusation a on a.gameId = g.id
 			    SET g.state = 'inProgress'
 			      , g.modifiedOn = CURRENT_TIMESTAMP
 			      , g.modifiedBy = 'dal:UpdateAccusationState()'
-			  WHERE a.id=?;
+			  WHERE a.id=?`,
+			id)
 
-			  SELECT g.id as gameId
+		gameRows, err := db.Query(`SELECT g.id as gameId
 			    FROM game g
 			    JOIN accusation a on a.gameId = g.id
 			   WHERE a.id=?`,
-			id,
 			id)
 
 		if err != nil {

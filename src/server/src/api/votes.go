@@ -145,6 +145,10 @@ func createVote(w http.ResponseWriter, db *sql.DB, b []byte) {
 
 	state, err := dal.UpdateAccusationState(db, int(*vote.AccusationId))
 
+	if err != nil {
+		log.Printf("Failed to update accusation state: %s\n", err)
+	}
+
 	if state == "guilty" {
 		VotedGuilty(vote.AccusationId, db)
 	}

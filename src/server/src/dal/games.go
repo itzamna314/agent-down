@@ -156,18 +156,35 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 }
 
 func RemoveGame(db *sql.DB, id int64) error {
-	_, err := db.Exec(`UPDATE player
-		                 SET gameId = null
-		               WHERE gameId = ?`,
+	_, err := db.Exec(`DELETE pa
+		                 FROM playerAccusation pa 
+		                 JOIN player p on p.id = pa.playerId
+		                WHERE p.gameId = ?`,
 		id)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec(`DELETE FROM game
-		                    WHERE id = ?`,
+	_, err = db.Exec(`DELETE p, a
+		                FROM player p
+		                JOIN game g on g.id = p.gameId
+		                JOIN accusation a on a.gameId = g.id
+		               WHERE g.id = ?`,
 		id)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`DELETE g
+		                FROM game g
+		               WHERE g.id = ?`,
+		id)
+
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -302,7 +319,7 @@ func StartGameClock(db *sql.DB, gameId int64) error {
 
 func StopGameClock(db *sql.DB, gameId int64) error {
 	_, err := db.Exec(`UPDATE game
-		               SET secondsRemaining = TIMESTAMPDIFF(SECOND, clockStartTime, CURRENT_TIMESTAMP)
+		               SET secondsRemaining = secondsRemaining - TIMESTAMPDIFF(SECOND, clockStartTime, CURRENT_TIMESTAMP)
 		                 , clockIsRunning = false
 		                 , modifiedOn = CURRENT_TIMESTAMP
 		                 , modifiedBy = 'dal:StopGameClock()'
