@@ -8,7 +8,7 @@ import (
 
 var conn string
 
-var dbDateLayout string = "2015-11-08 17:56:41"
+var dbDateLayout string = "2006-01-02 15:04:05"
 
 func Init(c *string) {
 	conn = *c

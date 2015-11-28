@@ -2,6 +2,8 @@ import Ember from 'ember';
 
 export default Ember.Service.extend({
 	secondsRemaining: null,
+	start: null,
+	elapsed: null,
 	time: Ember.computed('secondsRemaining', () => {
 		if ( !secondsRemaining ){ return '0:00'; }
 
@@ -15,19 +17,29 @@ export default Ember.Service.extend({
 		get(key) {
 			return this.get('_running');
 		},
-		set (key, value, prev) {
+		set (key, value) {
+			var prev = this.get('_running');
 			this.set('_running', value);
 
 			if ( !prev && value ) {
-				tick();
+				this.set('start', new Date().getTime());
+				this.set('elapsed', 0);
+				this.tick();
 			}
 		}
 	}),
-	tick: function() {
-		secondsRemaining = secondsRemaining - 1;
+	tick: function(adjustedTime) {
+		if ( this.get('_running') ) {
+			Ember.run.later(this, () => {
+				this.set('elapsed', this.get('elapsed') + 1000);
 
-		if ( isRunning ) {
-			Ember.run.later(this, () => this.tick());
+				this.set('secondsRemaining', this.get('secondsRemaining') - 1);
+
+				var creep = (new Date().getTime() - this.get('start')) - this.get('elapsed');
+
+				this.tick(1000 - creep)
+			}, 
+			adjustedTime || 1000);
 		}
 	}
 });

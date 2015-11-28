@@ -282,8 +282,6 @@ func (h *gamesHub) parsePlayerId(command GameCommand) (*int64, error) {
 func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
 	j, err := json.Marshal(&d)
 
-	log.Printf("Broadcast game message %d: %s\n", gameId, j)
-
 	if err != nil {
 		log.Printf("Failed to marshal\n")
 		return fmt.Errorf("Failed to marshall data: %v\n", d)
@@ -294,11 +292,8 @@ func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
 		message: j,
 	}
 
-	log.Printf("Writing to broacast channel: %v\n", msg)
-
 	h.broadcast <- &msg
 
-	log.Printf("Wrote to broadcast channel\n")
 	return nil
 }
 

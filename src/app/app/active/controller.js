@@ -33,6 +33,11 @@ export default Ember.Controller.extend({
                 this.set('clock.isRunning', o.isRunning);
             });
 
+            sock.writeSocket({
+                name: 'clock',
+                data: {}
+            });
+
         }.bind(this), function(reason) {
             console.log('Error: ' + reason);
             this.transitionToRoute('index');

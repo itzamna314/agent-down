@@ -232,6 +232,7 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 
 	// If the clock isn't running, secondsRemaining MUST be accurate
 	if isRunning == nil || !*isRunning || !g.secondsRemaining.Valid || !g.clockStartTime.Valid {
+		log.Printf("Clock is not running\n")
 		return &GameClock{
 			GameId:           g.id,
 			SecondsRemaining: IntOrNull(g.secondsRemaining),
@@ -248,10 +249,23 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 
 	s := g.secondsRemaining.Int64
 
-	now, _ := time.Parse(dbDateLayout, nowTicks.String)
-	startTime, _ := time.Parse(dbDateLayout, g.clockStartTime.String)
+	log.Printf("Raw start: %s - Raw now: %s\n", nowTicks.String, g.clockStartTime.String)
+
+	now, err := time.Parse(dbDateLayout, nowTicks.String)
+
+	if err != nil {
+		return nil, err
+	}
+
+	startTime, err := time.Parse(dbDateLayout, g.clockStartTime.String)
+
+	if err != nil {
+		return nil, err
+	}
 
 	remaining := s - int64(now.Sub(startTime).Seconds())
+
+	log.Printf("Start time: %s - Now: %s - Remaining: %d\n", startTime.Format("12:00:00"), now.Format("12:00:00"), remaining)
 
 	return &GameClock{
 		GameId:           g.id,
