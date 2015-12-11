@@ -227,6 +227,24 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		}
 	}
 
+	if *g.State == "spyGuess" && g.VictoryType == nil {
+		*g.State = "complete"
+
+		if g.LocationId == body.Game.LocationGuessId {
+			*g.VictoryType = "spyRightGuess"
+		} else {
+			*g.VictoryType = "spyWrongGuess"
+		}
+
+		g, err = dal.ReplaceGame(db, int64(id), g)
+
+		if err != nil {
+			log.Printf("Failed to guess location.")
+			http.Error(w, "Failed to guess location", 500)
+			return
+		}
+	}
+
 	resp := gamesRequest{
 		Games: []dal.Game{*g},
 	}

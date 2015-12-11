@@ -5,17 +5,18 @@ import (
 )
 
 type Game struct {
-	Id          *int     `json:"id,string"`
-	LocationId  *int64   `json:"location,string"`
-	State       *string  `json:"state"`
-	VictoryType *string  `json:"victoryType"`
-	Latitude    *float64 `json:"latitude"`
-	Longitude   *float64 `json:"longitude"`
-	Creator     *int64   `json:"creator,string"`
-	Spy         *int64   `json:"spy,string"`
-	Accuser     *int64   `json:"accuser,string"`
-	Accused     *int64   `json:"accused,string"`
-	PlayerIds   []string `json:"players"`
+	Id              *int     `json:"id,string"`
+	LocationId      *int64   `json:"location,string"`
+	LocationGuessId *int64   `json:"locationGuess,string"`
+	State           *string  `json:"state"`
+	VictoryType     *string  `json:"victoryType"`
+	Latitude        *float64 `json:"latitude"`
+	Longitude       *float64 `json:"longitude"`
+	Creator         *int64   `json:"creator,string"`
+	Spy             *int64   `json:"spy,string"`
+	Accuser         *int64   `json:"accuser,string"`
+	Accused         *int64   `json:"accused,string"`
+	PlayerIds       []string `json:"players"`
 }
 
 type gameDto struct {
