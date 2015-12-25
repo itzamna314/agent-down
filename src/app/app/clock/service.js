@@ -5,16 +5,16 @@ export default Ember.Service.extend({
 	start: null,
 	elapsed: null,
 	time: Ember.computed('secondsRemaining', () => {
-		if ( !secondsRemaining ){ return '0:00'; }
+		if ( !this.get('secondsRemaining') ){ return '0:00'; }
 
-		var mins = secondsRemaining / 60;
-		var secs = secondsRemaining % 60;
+		var mins = this.get('secondsRemaining') / 60;
+		var secs = this.get('secondsRemaining') % 60;
 
 		return `${mins}:${secs}`;
 	}),
 	_running: false,
 	isRunning: Ember.computed('_running', {
-		get(key) {
+		get(/*key*/) {
 			return this.get('_running');
 		},
 		set (key, value) {
@@ -37,7 +37,7 @@ export default Ember.Service.extend({
 
 				var creep = (new Date().getTime() - this.get('start')) - this.get('elapsed');
 
-				this.tick(1000 - creep)
+				this.tick(1000 - creep);
 			}, 
 			adjustedTime || 1000);
 		}

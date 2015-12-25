@@ -4,6 +4,7 @@
 	<img src={{location.image}} />
 {{else}}
 	<span>You are the spy!</span>
+	<button class="guess-location" {{action 'click'}}>View locations</button>
 {{/if}}
 
 {{yield}}
