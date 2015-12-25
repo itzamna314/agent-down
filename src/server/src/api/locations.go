@@ -8,11 +8,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
 type locationRequest struct {
 	Location dal.Location `json:"location"`
+}
+
+type locationsRequest struct {
+	Locations []dal.Location `json:"locations"`
 }
 
 func ServeLocations(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +47,7 @@ func ServeLocations(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		if idErr != nil {
-			http.Error(w, "GET list not implemented", 405)
+			findLocations(w, db, r.URL)
 		} else {
 			fetchLocation(w, db, locationId)
 		}
@@ -68,6 +73,32 @@ func fetchLocation(w http.ResponseWriter, db *sql.DB, id int) {
 
 	resp := locationRequest{
 		Location: *location,
+	}
+
+	j, err := json.Marshal(resp)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal to json: %v", resp), 500)
+		return
+	}
+
+	w.Write(j)
+}
+
+func findLocations(w http.ResponseWriter, db *sql.DB, url *url.URL) {
+	locations, err := dal.ListLocations(db)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to query db: %s", err), 500)
+		return
+	}
+
+	resp := locationsRequest{
+		Locations: make([]dal.Location, len(locations), len(locations)),
+	}
+
+	for idx, l := range locations {
+		resp.Locations[idx] = *l
 	}
 
 	j, err := json.Marshal(resp)

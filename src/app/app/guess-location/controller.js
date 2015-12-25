@@ -6,6 +6,7 @@ export default Ember.Controller.extend({
 	gameState: Ember.inject.service('game-state'),
     socket: null,
     clock: Clock.create(),
+    locations: null,
     init: function() {
         var gs = this.get('gameState');
 
@@ -27,6 +28,13 @@ export default Ember.Controller.extend({
     	).then(
     		(game) => {
             	var id = game.get('id');
+
+				this.store.findAll('location', {gameId: id}).then( 
+					(locations) => {
+						this.set('locations', locations)
+					}
+				)
+
             	var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
             	this.set('socket', sock);
