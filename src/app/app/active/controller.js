@@ -68,6 +68,9 @@ export default Ember.Controller.extend({
             function(reason){
                 alert('Could not accuse ' + player.get('name') + ': ' + reason);
             }.bind(this));
+        },
+        viewLocations(){
+            this.transitionToRoute('guess-location');
         }
     }
 });
