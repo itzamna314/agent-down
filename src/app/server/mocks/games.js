@@ -12,8 +12,8 @@ module.exports = function(app) {
       state: 'active',
       secondsRemaining: 420,
       location: 1,
-      latitude: null,
-      longitude: null,
+      latitude: 47.6183360,
+      longitude: -122.3535720, 
       players: [1,3]
   }, {
       id: 2,
@@ -24,8 +24,8 @@ module.exports = function(app) {
       state: 'awaitingPlayers',
       secondsRemaining: null,
       location: null,
-      latitude: null,
-      longitude: null,
+      latitude: 47.6183360,
+      longitude: -122.3535720, 
       players: [2,4]
   }];
 

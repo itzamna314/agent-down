@@ -17,57 +17,76 @@ export default Ember.Controller.extend({
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
-        gs.reloadPlayer(function(playerId) {
-            return this.get('store').findRecord('player', playerId);
-        }.bind(this)).then(function(){}, function(){
-            this.transitionToRoute('index');
-            console.log('Failed to reload player');
-        }.bind(this));
+        gs.reloadPlayer(
+            (playerId) => {
+                return this.get('store').findRecord('player', playerId);
+            }
+        ).then(
+            () => {},
+            () => {
+                this.transitionToRoute('index');
+                console.log('Failed to reload player');
+            }
+        );
 
         var sock = this.container.lookup('objects:joinSocket').create();
 
-        sock.on('incomingGame', function(joinData){
-            var geoPos = this.get('model.geoPosition');
+        sock.on('incomingGame', 
+                (joinData) => {
+                    var geoPos = this.get('model.geoPosition');
+                    var distance = dist(joinData.latitude, joinData.longitude, geoPos.latitude, geoPos.longitude);
 
-            var distance = dist(joinData.latitude, joinData.longitude, geoPos.latitude, geoPos.longitude);
+                    console.log("Incoming game " + distance + " miles away");
 
-            console.log("Incoming game " + distance + " miles away");
-
-            if (distance < threshold) {
-                this.send('updateGames');
-            }
-        }.bind(this));
+                    if (distance < threshold) {
+                        this.send('updateGames');
+                    }
+                 }
+        );
 
         this.set('socket', sock);
     },
     actions:{
-        joinGame: function(game){
+        joinGame: function(game) {
             var gameState = this.get('gameState');
 
-            gameState.joinGame(game).then(function(game) {
-                var sock = this.container.lookup('objects:gameSocket').create({gameId:game.get('id')});
-                sock.writeSocket({
-                    name: 'joined',
-                    data:{
-                        'playerId':gameState.get('player.id')
-                    }
-                }).then(function(){
-                    this.transitionToRoute('create', game);
-                }.bind(this));
-            }.bind(this), function(){
-                this.transitionToRoute('index');
-            }.bind(this));
+            gameState.joinGame(game).then(
+                (game) => {
+                    var sock = this.container.lookup('objects:gameSocket').create({gameId:game.get('id')});
+                    sock.writeSocket({
+                        name: 'joined',
+                        data:{
+                            'playerId':gameState.get('player.id')
+                        }
+                    }).then(
+                        () => {
+                            this.transitionToRoute('create', game);
+                        },
+                        () => {
+                            console.log('failed to write socket');
+                            this.transitionToRoute('create', game);
+                        }
+                    );
+                }, 
+                () => {
+                    this.transitionToRoute('index');
+                }
+            );
         },
         reset (){
             var gs = this.get('gameState');
-            gs.reset(false).then(function(obj){
-                if ( obj ) {
-                    var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
-                    sock.writeSocket(obj.event).then(function(){
-                        console.log('done');
-                    });
+            gs.reset(false).then(
+                (obj) => {
+                    if ( obj ) {
+                        var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
+                        sock.writeSocket(obj.event).then(
+                            () => {
+                                console.log('done');
+                            }
+                        );
+                    }
                 }
-            }.bind(this));
+            );
         }
     },
     willDestroy() {

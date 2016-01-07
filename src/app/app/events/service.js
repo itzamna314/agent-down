@@ -23,41 +23,54 @@ var svc = Ember.Service.extend({
 
         if (socket != null && this.get('socketService').websocketIsNotClosed(socket))
         {
-            return new Ember.RSVP.Promise(function (resolve) {
-                resolve(this.get('joinSocket'));
-            }.bind(this));
+            return new Ember.RSVP.Promise(
+                (resolve) => {
+                    resolve(this.get('joinSocket'));
+                }
+            );
         }
 
-        return new Ember.RSVP.Promise(function(resolve) {
-            var socket = this.get('socketService').socketFor(socketAddress);
+        return new Ember.RSVP.Promise(
+            (resolve,reject) => {
+                try
+                {
+                    var socket = this.get('socketService').socketFor(socketAddress);
 
-            socket.kill = function() {
-                socket.off('close', socketClosed.bind(this));
-                socket.close();
-                this.set('joinSocket', null);
-            }.bind(this);
+                    socket.kill = function() {
+                        socket.off('close', socketClosed.bind(this));
+                        socket.close();
+                        this.set('joinSocket', null);
+                    }.bind(this);
 
-            socket.on('open', function () {
-                reconnectsLeft = 5;
-                this.set('joinSocket', socket);
-                resolve(socket);
-            }, this);
-            socket.on('message', function (event) {
-                if (!event.data) {
-                    return;
+                    socket.on('open', () => {
+                        reconnectsLeft = 5;
+                        this.set('joinSocket', socket);
+                        resolve(socket);
+                    }, this);
+
+                    socket.on('message', (event) => {
+                        if (!event.data) {
+                            return;
+                        }
+
+                        var d = JSON.parse(event.data);
+                        handlerFn(d);
+                    }, this);
+
+                    socket.on('close', socketClosed.bind(this), this);
+
+                    // If it was already open, we still need to resolve the promise and save the socket
+                    if (this.get('socketService').websocketIsNotClosed(socket)) {
+                        this.set('joinSocket', socket);
+                        resolve(socket);
+                    }
                 }
-
-                var d = JSON.parse(event.data);
-                handlerFn(d);
-            }.bind(this), this);
-            socket.on('close', socketClosed.bind(this), this);
-
-            // If it was already open, we still need to resolve the promise and save the socket
-            if (this.get('socketService').websocketIsNotClosed(socket)) {
-                this.set('joinSocket', socket);
-                resolve(socket);
+                catch(ex)
+                {
+                    reject('Failed to open socket');
+                }
             }
-        }.bind(this));
+        );
 
         function socketClosed()
         {
