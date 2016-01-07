@@ -29,3 +29,6 @@ testem.log
 
 # Deploy script
 Makefile
+
+# Vim
+*.swp
