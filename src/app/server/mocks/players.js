@@ -5,22 +5,34 @@ module.exports = function(app) {
 
   var allPlayers = [{
       id: 1,
-      name: 'Player 1',
+      name: 'Itz',
       isSpy: false,
       hasAccused: false,
-      game: 1
+      game: 1,
+      isCreator: true,
+      accusationMade: null,
+      accusationsAgainst: [1],
+      votes: [1]
   }, {
       id: 2,
       name: 'Player 2',
       isSpy: true,
       hasAccused: null,
-      game: 1
+      game: 1,
+      isCreator: false,
+      accusationMade: 1,
+      accusationsAgainst: [],
+      votes: []
   }, {
       id: 3,
       name: 'Player 3',
       isSpy: false,
       hasAccused: true,
-      game: 1
+      game: 1,
+      isCreator: false,
+      accusationMade: null,
+      accusationsAgainst: [],
+      votes: [2]
   }, {
       id: 4,
       name: 'Player 4',
@@ -37,7 +49,7 @@ module.exports = function(app) {
 
   playersRouter.post('/', function(req, res) {
       var body     = req.body;
-      body.player.id = Math.round(Math.random() * 100);
+      body.player.id = 1;
 
       res.send(body);
   });

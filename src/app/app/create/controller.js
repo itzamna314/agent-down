@@ -64,16 +64,23 @@ export default Ember.Controller.extend(GeoLocationMixin, {
             var gs = this.get('gameState');
             var sock = this.get('socket');
 
-            gs.startGame().then(function(g){
-                sock.writeSocket({
-                    name: 'started',
-                    data: {
-                        gameId: g.get('id')
-                    }
-                }).then(function(){
-                    this.transitionToRoute('active');
-                }.bind(this));
-            }.bind(this));
+            gs.startGame().then(
+                (g) => {
+                   sock.writeSocket({
+                       name: 'started',
+                       data: {
+                           gameId: g.get('id')
+                       }
+                   }).then(
+                       () => {
+                           this.transitionToRoute('active');
+                       }, 
+                       () => {
+                          this.transitionToRoute('active')
+                       }
+                   );
+                }
+            );
         },
         kickPlayer: function(player) {
             var sock = this.get('socket');

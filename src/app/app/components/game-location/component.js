@@ -6,7 +6,7 @@ export default Ember.Component.extend({
 	}),
 	actions: {
 		click () {
-			this.sendAction('viewLocations')
+			this.sendAction('viewLocations');
 		}
 	}
 });

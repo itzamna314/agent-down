@@ -6,17 +6,15 @@ module.exports = function(app) {
   var allGames = [{
       id: 1,
       spy: 2,
+      accused: null,
       creator: 1,
       createdOn: '2015-08-30',
       state: 'active',
       secondsRemaining: 420,
       location: 1,
-      locationGuess: null,
       latitude: 47.6183360,
       longitude: -122.3535720, 
-      players: [1,2,3],
-      victoryType: null,
-      accusations: [1]
+      players: [1,2,3]
   }, {
       id: 2,
       spy: null,
