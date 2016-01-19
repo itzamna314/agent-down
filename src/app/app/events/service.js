@@ -92,7 +92,7 @@ var svc = Ember.Service.extend({
 
         if (socket != null  && this.get('socketService').websocketIsNotClosed(socket))
         {
-            return new Ember.RSVP.Promise(function(resolve) {
+            return new Ember.RSVP.Promise((resolve /*,reject*/) => {
                 socket.on('message', function(event){
                     if ( !event.data ) {
                         return;
@@ -104,31 +104,29 @@ var svc = Ember.Service.extend({
                 }, this);
 
                 resolve(socket);
-            }.bind(this));
+            });
         }
 
         var reconnectsLeft = 5;
 
-        return new Ember.RSVP.Promise(function(resolve){
+        return new Ember.RSVP.Promise((resolve,reject) => {
             var socket = this.get('socketService').socketFor(socketAddress);
 
-            socket.kill = function() {
+            socket.kill = () => {
                 socket.off('close', socketClosed.bind(this));
                 socket.close();
                 this.set('createSocket', null);
-            }.bind(this);
+            };
 
             socket.on('open', function(){
                 reconnectsLeft = 5;
                 this.set('createSocket', socket);
                 resolve(socket);
-                console.log('case 2');
             }, this);
             socket.on('message', function(event){
                 if ( !event.data ) {
                     return;
                 }
-                console.log('Got socket message: ' + event.data);
                 var d = JSON.parse(event.data);
 
                 handlerFn(d);
@@ -138,9 +136,10 @@ var svc = Ember.Service.extend({
             if (socket.readyState() === WebSocket.OPEN) {
                 this.set('createSocket', socket);
                 resolve(socket);
-                console.log('case 3');
+            } else {
+                reject("failed to open socket");
             }
-        }.bind(this));
+        });
 
         function socketClosed()
         {

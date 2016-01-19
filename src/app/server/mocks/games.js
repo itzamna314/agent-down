@@ -43,7 +43,9 @@ module.exports = function(app) {
       var body     = req.body;
       body.game.id = 1;
 
-      res.send(allGames[body.game.id]);
+      res.send({
+          'games': [allGames[body.game.id]]
+      });
   });
 
   gamesRouter.get('/:id', function(req, res) {

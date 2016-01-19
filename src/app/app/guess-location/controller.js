@@ -31,9 +31,9 @@ export default Ember.Controller.extend({
 
 				this.store.findAll('location', {gameId: id}).then( 
 					(locations) => {
-						this.set('locations', locations)
+						this.set('locations', locations);
 					}
-				)
+				);
 
             	var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 

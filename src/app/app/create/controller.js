@@ -76,7 +76,7 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                            this.transitionToRoute('active');
                        }, 
                        () => {
-                          this.transitionToRoute('active')
+                          this.transitionToRoute('active');
                        }
                    );
                 }

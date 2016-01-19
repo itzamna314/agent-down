@@ -6,10 +6,13 @@ function readGameSocket(data) {
 
 function sendOnOpen(msg, successCb, errorCb, sender, key/*, value, rev*/) {
     var sock = sender.get(key);
-    if ( sock != null && sock.websocketIsNotClosed()) {
+    var sockErr = sender.get('socketErr');
+    if ( sock != null && sockErr != null && sock.websocketIsNotClosed()) {
         sock.send(msg);
         successCb(msg);
         sender.removeObserver(key, this, sendOnOpen);
+    } else if (sockErr != null ) {
+       errorCb(sockErr); 
     } else {
         errorCb("websocket failed to open");
     }
@@ -20,13 +23,19 @@ export function initialize(container, application) {
         gameId: null,
         sockets: Ember.inject.service('events'),
         socket: null,
+        socketErr: null,
         writeSocket: function (data) {
             var msg = JSON.stringify(data);
 
-            return new Ember.RSVP.Promise(function(resolve, reject){
+            return new Ember.RSVP.Promise((resolve, reject) => {
                 var sock = this.get('socket');
                 if (!sock) {
-                    this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve, reject));
+                    var socketErr = this.get('socketErr');
+                    if ( !socketErr ) {
+                        this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve, reject));
+                    } else {
+                        reject("Socket failed to open: " + socketErr);
+                    }
                 } 
                 else if (sock.websocketIsNotClosed()){
                     sock.send(msg);
@@ -34,7 +43,7 @@ export function initialize(container, application) {
                 } else {
                     reject("websocket failed to open");
                 }
-            }.bind(this));
+            });
         },
         init: function () {
             this._super.apply(this, arguments);
@@ -45,10 +54,15 @@ export function initialize(container, application) {
 
             var svc = this.get('sockets');
             svc.getCreateSocket(this.get('gameId'), readGameSocket.bind(this))
-                .then(function (socket) {
-                    this.set('socket', socket);
-                }.bind(this)
-            );
+                .then(
+                    (socket) => {
+                        this.set('socket', socket);
+                    },
+                    (msg) => {
+                        this.set('socket', msg);
+                        this.set('socketErr', msg);
+                    }
+                );
         },
         kill: function() {
             var sock = this.get('socket');
