@@ -7,11 +7,11 @@ function readGameSocket(data) {
 function sendOnOpen(msg, successCb, errorCb, sender, key/*, value, rev*/) {
     var sock = sender.get(key);
     var sockErr = sender.get('socketErr');
-    if ( sock != null && sockErr != null && sock.websocketIsNotClosed()) {
+    if ( sock && !sockErr && sock.isOpen()) {
         sock.send(msg);
         successCb(msg);
         sender.removeObserver(key, this, sendOnOpen);
-    } else if (sockErr != null ) {
+    } else if (!sockErr ) {
        errorCb(sockErr); 
     } else {
         errorCb("websocket failed to open");
@@ -29,15 +29,15 @@ export function initialize(container, application) {
 
             return new Ember.RSVP.Promise((resolve, reject) => {
                 var sock = this.get('socket');
+                var sockErr = this.get('socketErr');
                 if (!sock) {
-                    var socketErr = this.get('socketErr');
-                    if ( !socketErr ) {
+                    if ( !sockErr ) {
                         this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve, reject));
                     } else {
                         reject("Socket failed to open: " + socketErr);
                     }
                 } 
-                else if (sock.websocketIsNotClosed()){
+                else if (!sockErr && sock.isOpen()){
                     sock.send(msg);
                     resolve(msg);
                 } else {

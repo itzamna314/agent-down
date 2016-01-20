@@ -59,10 +59,15 @@ var svc = Ember.Service.extend({
 
                     socket.on('close', socketClosed.bind(this), this);
 
-                    // If it was already open, we still need to resolve the promise and save the socket
-                    if (this.get('socketService').websocketIsNotClosed(socket)) {
-                        this.set('joinSocket', socket);
+                    socket.isOpen = () => {
+                        return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
+                    }
+
+                    if (socket.readyState() === WebSocket.OPEN) {
+                        this.set('createSocket', socket);
                         resolve(socket);
+                    } else if (socket.readyState() !== WebSocket.CONNECTING) {
+                        reject("failed to open socket");
                     }
                 }
                 catch(ex)
@@ -133,10 +138,14 @@ var svc = Ember.Service.extend({
             }, this);
             socket.on('close',socketClosed.bind(this), this);
 
+            socket.isOpen = () => {
+                return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
+            }
+
             if (socket.readyState() === WebSocket.OPEN) {
                 this.set('createSocket', socket);
                 resolve(socket);
-            } else {
+            } else if (socket.readyState() !== WebSocket.CONNECTING) {
                 reject("failed to open socket");
             }
         });
