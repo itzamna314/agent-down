@@ -37,6 +37,75 @@ func FetchAccusation(db *sql.DB, id int64) (*Accusation, error) {
 	return dto.ToAccusation(), nil
 }
 
+func FindGameAccusations(db *sql.DB, gameId int64) ([]int64, error) {
+	rows, err := db.Query("SELECT a.id FROM accusation a WHERE a.gameId=?", gameId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var ids []int64
+
+	for rows.Next() {
+		id := new(int64)
+		err := rows.Scan(id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, *id)
+	}
+
+	return ids, nil
+}
+
+func FindPlayerAccusationsMade(db *sql.DB, playerId int64) ([]int64, error) {
+	rows, err := db.Query("SELECT a.id FROM accusation a WHERE a.accuserId=?", playerId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var ids []int64
+
+	for rows.Next() {
+		id := new(int64)
+		err := rows.Scan(id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, *id)
+	}
+
+	return ids, nil
+}
+
+func FindPlayerAccusationsAgainst(db *sql.DB, playerId int64) ([]int64, error) {
+	rows, err := db.Query("SELECT a.id FROM accusation a WHERE a.accusedId=?", playerId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var ids []int64
+
+	for rows.Next() {
+		id := new(int64)
+		err := rows.Scan(id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, *id)
+	}
+
+	return ids, nil
+}
+
 func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	if a.AccusedId == nil || a.AccuserId == nil || a.GameId == nil {
 		return nil, errors.New("Accuser, Accused, and Game are required")

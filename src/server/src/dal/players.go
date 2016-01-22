@@ -11,10 +11,8 @@ func FindAllPlayers(db *sql.DB) ([]*Player, error) {
 		                        , p.name
 		                        , p.gameId
 		                        , p.isSpy
-		                        , p.isCreator 
-		                        , a.id as accusationMade
-		                     FROM player p
-		                LEFT JOIN accusation a on a.accuserId = p.id`)
+		                        , p.isCreator
+		                     FROM player p`)
 	if err != nil {
 		return nil, err
 	}
@@ -91,15 +89,34 @@ func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
 		                     , p.gameId
 		                     , p.isSpy
 		                     , p.isCreator 
-		                     , a.id as accusationMade
 		                  FROM player p
-		             LEFT JOIN accusation a on a.accuserId = p.id
 		                 WHERE p.id=?`, id)
 	dto := newPlayerDto()
-	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator, dto.accusationMade)
+	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator)
 	if err != nil {
 		return nil, err
 	}
+
+	accusationsMade, err := FindPlayerAccusationsMade(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	dto.accusationsMade = accusationsMade
+
+	accusationsAgainst, err := FindPlayerAccusationsAgainst(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	dto.accusationsAgainst = accusationsAgainst
+
+	votes, err := FindPlayerVotes(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	dto.votes = votes
 
 	return dto.ToPlayer(), nil
 }

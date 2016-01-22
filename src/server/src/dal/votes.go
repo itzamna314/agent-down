@@ -68,6 +68,29 @@ func FindAccusationVotes(db *sql.DB, accusationId int64) ([]int64, error) {
 	return ids, nil
 }
 
+func FindPlayerVotes(db *sql.DB, playerId int64) ([]int64, error) {
+	rows, err := db.Query("SELECT id FROM playerAccusation WHERE playerId=?", playerId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var ids []int64
+
+	for rows.Next() {
+		id := new(int64)
+		err := rows.Scan(id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, *id)
+	}
+
+	return ids, nil
+}
+
 func CreateVote(db *sql.DB, v *Vote) (*Vote, error) {
 	if v.AccusationId == nil || v.PlayerId == nil || v.Accuse == nil {
 		return nil, errors.New("Player, Accusation, and Accuse are required")

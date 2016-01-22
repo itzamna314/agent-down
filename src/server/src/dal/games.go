@@ -32,23 +32,19 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 	g := newGameDto()
 	row := db.QueryRow(`SELECT g.id
 		                     , g.locationId
+							 , g.locationGuessId
 		                     , g.state
 		                     , g.victoryType
 		                     , g.latitude
 		                     , g.longitude
 		                     , cr.id as creatorId
 		                     , spy.id as spyId
-		                     , accused.Id as accusedId
-		                     , accuser.Id as accuserId
 		                  FROM game g 
 		             LEFT JOIN player cr on cr.gameId = g.id and cr.isCreator = 1
 		             LEFT JOIN player spy on spy.gameId = g.id and spy.isSpy = 1
-		             LEFT JOIN accusation acc on acc.gameId = g.id and acc.state = 'voting'
-		             LEFT JOIN player accused on accused.id = acc.accusedId
-		             LEFT JOIN player accuser on accuser.id = acc.accuserId
 		                 WHERE g.id = ?`,
 		id)
-	err := row.Scan(g.id, g.locationId, g.state, g.victoryType, g.latitude, g.longitude, g.creatorId, g.spyId, g.accusedId, g.accuserId)
+	err := row.Scan(g.id, g.locationId, g.locationGuessId, g.state, g.victoryType, g.latitude, g.longitude, g.creatorId, g.spyId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +55,13 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 	}
 
 	g.playerIds = players
+
+	accusations, err := FindGameAccusations(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	g.accusationIds = accusations
 
 	return g.ToGame(), nil
 }
