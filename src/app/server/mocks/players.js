@@ -12,7 +12,7 @@ module.exports = function(app) {
       isCreator: true,
       accusationMade: null,
       accusationsAgainst: [1],
-      votes: [1]
+      votes: []
   }, {
       id: 2,
       name: 'Player 2',
@@ -22,7 +22,7 @@ module.exports = function(app) {
       isCreator: false,
       accusationMade: 1,
       accusationsAgainst: [],
-      votes: []
+      votes: [1]
   }, {
       id: 3,
       name: 'Player 3',
@@ -30,7 +30,7 @@ module.exports = function(app) {
       hasAccused: true,
       game: 1,
       isCreator: false,
-      accusationMade: null,
+      accusationMade: [1],
       accusationsAgainst: [],
       votes: [2]
   }, {
@@ -39,6 +39,36 @@ module.exports = function(app) {
       isSpy: null,
       hasAccused: null,
       game: 2
+  }, {
+      id: 5,
+      name: 'Player 5',
+      isSpy: false,
+      hasAccused: true,
+      game: 3,
+      isCreator: false,
+      accusationMade: [3],
+      accusationsAgainst: [2],
+      votes: [4]
+  }, {
+      id: 6,
+      name: 'Player 6',
+      isSpy: true,
+      hasAccused: true,
+      game: 3,
+      isCreator: false,
+      accusationMade: [2],
+      accusationsAgainst: [3],
+      votes: [3]
+  }, {
+      id: 7,
+      name: 'Player 7',
+      isSpy: false,
+      hasAccused: true,
+      game: 3,
+      isCreator: false,
+      accusationMade: [],
+      accusationsAgainst: [],
+      votes: [5,6]
   }];
 
   playersRouter.get('/', function(req, res) {

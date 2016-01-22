@@ -24,7 +24,7 @@ export default Ember.Controller.extend({
             	console.log('voted');
                 this.get('model').reload().then(function(accusation){
                     if ( accusation.get('state') === 'guilty' ) {
-                        this.transitionToRoute('results');
+                        this.transitionToRoute('results', game);
                     } else if (accusation.get('state') === 'innocent' ) {
                         this.transitionToRoute('active');
                     }

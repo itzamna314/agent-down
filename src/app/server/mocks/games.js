@@ -5,11 +5,10 @@ module.exports = function(app) {
 
   var allGames = [{
       id: 1,
-      spy: 2,
       creator: 1,
+      spy: 2,
       createdOn: '2015-08-30',
       state: 'active',
-      secondsRemaining: 420,
       location: 1,
       locationGuess: null,
       latitude: 47.6183360,
@@ -19,16 +18,30 @@ module.exports = function(app) {
       accusations: [1]
   }, {
       id: 2,
-      spy: null,
-      accused: null,
       creator: 4,
+      spy: null,
       createdOn: '2015-08-31',
       state: 'awaitingPlayers',
-      secondsRemaining: null,
       location: null,
+      locationGuess: null,
       latitude: 47.6183360,
       longitude: -122.3535720, 
-      players: [4]
+      players: [4],
+      victoryType: null,
+      accusations: []
+  }, {
+      id: 3,
+      creator: 5,
+      spy: 6,
+      createdOn: '2016-01-19',
+      state: 'playersWin',
+      location: 2,
+      locationGuess: null,
+      latitude: 47.6,
+      longitude: -122,
+      players: [5,6,7],
+      victoryType: 'vote',
+      accusations: [2,3]
   }];
 
   gamesRouter.get('/', function(req, res) {

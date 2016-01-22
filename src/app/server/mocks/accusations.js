@@ -11,6 +11,20 @@ module.exports = function(app) {
           'game':1,
           'votes':[1,2],
           'state':'voting'
+      },{
+          'id':2,
+          'accuser':6,
+          'accused':5,
+          'game':3,
+          'votes':[3,5],
+          'state':'innocent'
+      },{
+          'id':3,
+          'accuser':5,
+          'accused':6,
+          'game':3,
+          'votes':[4,6],
+          'state':'guilty'
       }
   ];
 

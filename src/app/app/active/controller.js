@@ -9,39 +9,45 @@ export default Ember.Controller.extend({
     init: function() {
         var gs = this.get('gameState');
 
-        gs.reloadPlayer(function(playerId){
+        gs.reloadPlayer((playerId) => {
             return this.store.findRecord('player', playerId);
-        }.bind(this)).then(function(){}, function(){
-            this.transitionToRoute('index');
-        }.bind(this));
+        }).then(
+            () => {}, 
+            () => {
+                this.transitionToRoute('index');
+            }
+        );
 
-        gs.reloadGame(function(gameId){
+        gs.reloadGame((gameId) => {
             return this.store.findRecord('game', gameId);
-        }.bind(this)).then(function(game){
-            var id = game.get('id');
-            var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+        }).then(
+            (game) => {
+                var id = game.get('id');
+                var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
-            this.set('socket', sock);
+                this.set('socket', sock);
 
-            sock.on('accused', function(o){
-                var accusation = o.accusation;
-                this.transitionToRoute('vote', accusation);
-            }.bind(this));
+                sock.on('accused', (o) => {
+                    var accusation = o.accusation;
+                    this.transitionToRoute('vote', accusation);
+                });
 
-            sock.on('clock', o => {
-                this.set('clock.secondsRemaining', o.secondsRemaining);
-                this.set('clock.isRunning', o.isRunning);
-            });
+                sock.on('clock', o => {
+                    this.set('clock.secondsRemaining', o.secondsRemaining);
+                    this.set('clock.isRunning', o.isRunning);
+                });
 
-            sock.writeSocket({
-                name: 'clock',
-                data: {}
-            });
+                sock.writeSocket({
+                    name: 'clock',
+                    data: {}
+                });
 
-        }.bind(this), function(reason) {
-            console.log('Error: ' + reason);
-            this.transitionToRoute('index');
-        }.bind(this));
+            }, 
+            (reason) => {
+                console.log('Error: ' + reason);
+                this.transitionToRoute('index');
+            }
+        );
     },
     actions:{
         accuse:function(player){

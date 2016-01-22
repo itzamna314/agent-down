@@ -17,6 +17,7 @@ create table if not exists location(
 create table if not exists game(
 	id int primary key not null auto_increment,
     locationId int null, FOREIGN KEY (locationId) references location (id),
+    locationGuessId int null, FOREIGN KEY (locationGuessId) references location (id),
     state nvarchar(255) not null default 'created',
     victoryType nvarchar(64),
     latitude decimal(16,12) null,

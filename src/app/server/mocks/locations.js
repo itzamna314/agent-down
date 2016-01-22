@@ -1,67 +1,53 @@
 module.exports = function(app) {
   var express = require('express');
   var bodyParser = require('body-parser');
-  var gamesRouter = express.Router();
+  var locationsRouter = express.Router();
 
-  var allGames = [{
-      id: 1,
-      spy: 2,
-      accused: null,
-      creator: 1,
-      createdOn: '2015-08-30',
-      state: 'active',
-      secondsRemaining: 420,
-      location: 1,
-      latitude: 47.6183360,
-      longitude: -122.3535720, 
-      players: [1,2,3]
+  var allLocations = [{
+      id: '1',
+      name: 'beach',
+      image: 'http://www.hiltonhawaiianvillage.com/assets/img/discover/oahu-island-activities/HHV_Oahu-island-activities_Content_Beaches_455x248_x2.jpg',
+      games: [1]
   }, {
-      id: 2,
-      spy: null,
-      accused: null,
-      creator: 4,
-      createdOn: '2015-08-31',
-      state: 'awaitingPlayers',
-      secondsRemaining: null,
-      location: null,
-      latitude: 47.6183360,
-      longitude: -122.3535720, 
-      players: [4]
+    id: '2',
+    name: 'Pirate Ship',
+    image: 'http://images.birthdayexpress.com/mgen/jointed-pirate-ship-cutout-bx-23470.jpg?zm=1600,1600,1,0,0',
+    games: [3]
   }];
 
-  gamesRouter.get('/', function(req, res) {
+  locationsRouter.get('/', function(req, res) {
     res.send({
-      'games': allGames.filter((function(g){
+      'locations': allLocations.filter((function(g){
           return !req.query.state || req.query.state == g.state;
       }))
     });
   });
 
-  gamesRouter.post('/', function(req, res) {
+  locationsRouter.post('/', function(req, res) {
       var body     = req.body;
       body.game.id = 1;
 
-      res.send(allGames[body.game.id]);
+      res.send(allLocations[body.game.id]);
   });
 
-  gamesRouter.get('/:id', function(req, res) {
+  locationsRouter.get('/:id', function(req, res) {
     res.send({
-      'game': allGames.filter((function(g) {
+      'location': allLocations.filter((function(g) {
           return g.id == req.params.id;
       }))[0]
     });
   });
 
-  gamesRouter.put('/:id', function(req, res) {
-      var g = allGames[0];
+  locationsRouter.put('/:id', function(req, res) {
+      var g = allLocations[0];
       g.id = req.params.id;
 
     res.send({
-      'games': g
+      'locations': g
     });
   });
 
-  gamesRouter.delete('/:id', function(req, res) {
+  locationsRouter.delete('/:id', function(req, res) {
     res.status(204).end();
   });
 
@@ -71,5 +57,5 @@ module.exports = function(app) {
     return next();
   });
 
-  app.use('/api/games', bodyParser.json(), gamesRouter);
+  app.use('/api/locations', bodyParser.json(), locationsRouter);
 };
