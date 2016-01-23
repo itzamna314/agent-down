@@ -1,4 +1,10 @@
-<span>{{location.name}}</span>
-<img src={{location.image}} />
-
+<div>
+    <div>
+        <span>{{location.name}}</span>
+        <button {{action 'click' location}}>Guess!</button>
+    </div>
+    <div>
+        <img src={{location.image}} height="300" width="300"/>
+    </div>
+</div>
 {{yield}}

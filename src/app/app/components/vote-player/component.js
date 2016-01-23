@@ -5,7 +5,6 @@ export default Ember.Component.extend({
 		var accuserIsNotMe = this.get('accusation.accuser.id') !== this.get('me.id');
 		var accusedIsNotMe = this.get('accusation.accused.id') !== this.get('me.id');
 		var myVote = this.get('accusation.votes').findBy('player.id', this.get('me.id'));
-        var accusationMade = this.get('me.accusationMade');
 
 		return accuserIsNotMe && accusedIsNotMe && !myVote;
 	}),

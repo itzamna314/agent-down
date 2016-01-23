@@ -61,4 +61,11 @@ export default Ember.Controller.extend({
         	}
     	);
     },
+    actions: {
+        guess: function(location) {
+            var game = this.get('gameState.game');
+            game.set('locationGuess', location);
+            game.save();
+        }
+    }
 });

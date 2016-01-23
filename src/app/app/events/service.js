@@ -61,7 +61,7 @@ var svc = Ember.Service.extend({
 
                     socket.isOpen = () => {
                         return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
-                    }
+                    };
 
                     if (socket.readyState() === WebSocket.OPEN) {
                         this.set('createSocket', socket);
@@ -140,7 +140,7 @@ var svc = Ember.Service.extend({
 
             socket.isOpen = () => {
                 return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
-            }
+            };
 
             if (socket.readyState() === WebSocket.OPEN) {
                 this.set('createSocket', socket);

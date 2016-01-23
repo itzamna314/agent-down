@@ -34,7 +34,7 @@ export function initialize(container, application) {
                     if ( !sockErr ) {
                         this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve, reject));
                     } else {
-                        reject("Socket failed to open: " + socketErr);
+                        reject("Socket failed to open: " + sockErr);
                     }
                 } 
                 else if (!sockErr && sock.isOpen()){
