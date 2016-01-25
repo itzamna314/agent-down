@@ -65,7 +65,19 @@ export default Ember.Controller.extend({
         guess: function(location) {
             var game = this.get('gameState.game');
             game.set('locationGuess', location);
-            game.save();
+            game.save().then(
+                (game) => {
+                   this.get('socket').writeSocket({
+                       name: 'guessed',
+                       data: { 'location': location.get('id') }
+                   });
+
+                   this.transitionToRoute('results', game);
+                },
+                (msg) => {
+                    this.transitionToRoute('results', game);
+                }
+            );
         }
     }
 });

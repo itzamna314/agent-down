@@ -6,52 +6,73 @@ export default Ember.Controller.extend({
     init: function() {
         var gs = this.get('gameState');
 
-        gs.reloadPlayer(function(playerId){
-            return this.store.findRecord('player', playerId);
-        }.bind(this)).then(function(){}, function(){
-            this.transitionToRoute('index');
-        }.bind(this));
+        gs.reloadPlayer(
+            (playerId) => {
+                return this.store.findRecord('player', playerId);
+            }
+        ).then(
+            () => {},
+            () => {
+                this.transitionToRoute('index');
+            }
+        );
 
-        gs.reloadGame(function(gameId){
-            return this.store.findRecord('game', gameId);
-        }.bind(this)).then(function(game){
-            var id = game.get('id');
-            var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+        gs.reloadGame(
+            (gameId) => {
+                return this.store.findRecord('game', gameId);
+            }
+        ).then(
+            (game) => {
+                var id = game.get('id');
+                var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
-            this.set('socket', sock);
+                this.set('socket', sock);
 
-            sock.on('voted', function(/*o*/){
-            	console.log('voted');
-                this.get('model').reload().then(function(accusation){
-                    if ( accusation.get('state') === 'guilty' ) {
-                        this.transitionToRoute('results', game);
-                    } else if (accusation.get('state') === 'innocent' ) {
-                        this.transitionToRoute('active');
+                sock.on('voted', 
+                    () => {
+                        console.log('voted');
+                        this.onVoted();
                     }
-                }.bind(this));
-            }.bind(this));
-
-        }.bind(this), function(reason) {
-            console.log('Error: ' + reason);
-            this.transitionToRoute('index');
-        }.bind(this));
+               );
+            }, 
+            (reason) => {
+                console.log('Error: ' + reason);
+                this.transitionToRoute('index');
+            }
+        );
     },
     vote: function(isGuilty){
         var gs = this.get('gameState');
         var sock = this.get('socket');
 
-        gs.vote(this.get('store'), this.get('model'), isGuilty).then(function(/*vote*/){
-            sock.writeSocket({
-                name: 'voted',
-                data: {
-                    accusation: this.get('model.id'),
-                    accuse: isGuilty
-                }
-            });
-        }.bind(this),
-        function(reason){
-            alert('Could not vote: ' + reason);
-        }.bind(this));
+        gs.vote(this.get('store'), this.get('model'), isGuilty).then(
+            (/*vote*/) => {
+                sock.writeSocket({
+                    name: 'voted',
+                    data: {
+                        accusation: this.get('model.id'),
+                        accuse: isGuilty
+                    }
+                });
+
+                this.onVoted();
+            },
+            (reason) => {
+                alert('Could not vote: ' + reason);
+            }
+        );
+    },
+    onVoted: function() {
+        
+        this.get('model').reload().then(
+            (accusation) => {
+                if ( accusation.get('state') === 'guilty' ) {
+                        this.transitionToRoute('results', game);
+                    } else if (accusation.get('state') === 'innocent' ) {
+                        this.transitionToRoute('active');
+                    }
+            }
+        );
     },
     actions:{
         voteGuilty: function() {

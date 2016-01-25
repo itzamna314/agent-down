@@ -57,11 +57,14 @@ var svc = Ember.Service.extend({
                         handlerFn(d);
                     }, this);
 
-                    socket.on('close', socketClosed.bind(this), this);
-
                     socket.isOpen = () => {
                         return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
                     };
+
+                    socket.on('close', socketClosed.bind(this, 
+                        () => { reject('Socket closed prematurely'); 
+                        }
+                    ), this);
 
                     if (socket.readyState() === WebSocket.OPEN) {
                         this.set('createSocket', socket);
@@ -77,7 +80,7 @@ var svc = Ember.Service.extend({
             }
         );
 
-        function socketClosed()
+        function socketClosed(onFail)
         {
             var socket = this.get('joinSocket');
 
@@ -87,6 +90,7 @@ var svc = Ember.Service.extend({
             }
             else {
                 this.set('joinSocket', null);
+                onFail();
             }
         }
     },
@@ -136,11 +140,17 @@ var svc = Ember.Service.extend({
 
                 handlerFn(d);
             }, this);
-            socket.on('close',socketClosed.bind(this), this);
-
+            
             socket.isOpen = () => {
                 return socket.readyState() === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING;
             };
+
+            socket.on('close',socketClosed.bind(this,
+                    () => {
+                        reject("Socket closed prematurely");
+                    }
+                ),
+            this);
 
             if (socket.readyState() === WebSocket.OPEN) {
                 this.set('createSocket', socket);
@@ -150,7 +160,7 @@ var svc = Ember.Service.extend({
             }
         });
 
-        function socketClosed()
+        function socketClosed(onFail)
         {
             var socket = this.get('createSocket');
 
@@ -160,6 +170,7 @@ var svc = Ember.Service.extend({
             }
             else {
                 this.set('createSocket', null);
+                onFail();
             }
         }
     }

@@ -66,15 +66,9 @@ export default Ember.Controller.extend({
                         data:{
                             'playerId':gameState.get('player.id')
                         }
-                    }).then(
-                        () => {
-                            this.transitionToRoute('create', game);
-                        },
-                        () => {
-                            console.log('failed to write socket');
-                            this.transitionToRoute('create', game);
-                        }
-                    );
+                    });
+                    
+                    this.transitionToRoute('create', game);
                 }, 
                 () => {
                     this.transitionToRoute('index');
