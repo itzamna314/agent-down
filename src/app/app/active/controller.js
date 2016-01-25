@@ -54,26 +54,30 @@ export default Ember.Controller.extend({
             var gs = this.get('gameState');
             var sock = this.get('socket');
 
-            gs.accuse(this.get('store'), player).then(function(accusation){
-                sock.writeSocket({
-                    name: 'accused',
-                    data: {
-                        accusation: accusation.get('id')
-                    }
-                });
-
-                gs.vote(this.get('store'), accusation, true).then(function(/*acc*/){
+            gs.accuse(this.get('store'), player).then(
+                (accusation) => {
                     sock.writeSocket({
-                        name: 'voted',
+                        name: 'accused',
                         data: {
                             accusation: accusation.get('id')
                         }
                     });
-                });
-            }.bind(this),
-            function(reason){
+
+                    gs.vote(this.get('store'), accusation, true).then(
+                        (/*acc*/) => {
+                            sock.writeSocket({
+                            name: 'voted',
+                            data: {
+                                accusation: accusation.get('id')
+                            }
+                        });
+                    });
+
+                    this.transitionToRoute('vote', accusation);
+            },
+            (reason) => {
                 alert('Could not accuse ' + player.get('name') + ': ' + reason);
-            }.bind(this));
+            });
         },
         viewLocations(){
             this.transitionToRoute('guess-location');

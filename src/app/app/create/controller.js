@@ -71,14 +71,9 @@ export default Ember.Controller.extend(GeoLocationMixin, {
                        data: {
                            gameId: g.get('id')
                        }
-                   }).then(
-                       () => {
-                           this.transitionToRoute('active');
-                       }, 
-                       () => {
-                          this.transitionToRoute('active');
-                       }
-                   );
+                   });
+
+                   this.transitionToRoute('active');
                 }
             );
         },
@@ -97,14 +92,16 @@ export default Ember.Controller.extend(GeoLocationMixin, {
         },
         back : function() {
             var gs = this.get('gameState');
-            gs.reset(false).then(function(obj){
-                var sock = this.get('socket');
-
-                sock.writeSocket(obj.event).then(function(){
+            gs.reset(false).then(
+                (obj) => {
+                    var sock = this.get('socket');
+                    sock.writeSocket(obj.event);
                     sock.kill();
                     this.transitionToRoute('join');
-                }.bind(this));
-            }.bind(this));
+                }, () => {
+                    this.transitionToRoute('index');
+                }
+            );
         }
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){

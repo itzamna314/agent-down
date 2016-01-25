@@ -4,18 +4,14 @@ function readGameSocket(data) {
     this.trigger(data.command, data);
 }
 
-function sendOnOpen(msg, successCb, errorCb, sender, key/*, value, rev*/) {
+function sendOnOpen(msg, sender, key/*, value, rev*/) {
     var sock = sender.get(key);
     var sockErr = sender.get('socketErr');
     if ( sock && !sockErr && sock.isOpen()) {
         sock.send(msg);
-        successCb(msg);
-        sender.removeObserver(key, this, sendOnOpen);
-    } else if (!sockErr ) {
-       errorCb(sockErr); 
-    } else {
-        errorCb("websocket failed to open");
-    }
+    } 
+  
+    sender.removeObserver(key, this, sendOnOpen);
 }
 
 export function initialize(container, application) {
@@ -27,23 +23,16 @@ export function initialize(container, application) {
         writeSocket: function (data) {
             var msg = JSON.stringify(data);
 
-            return new Ember.RSVP.Promise((resolve, reject) => {
-                var sock = this.get('socket');
-                var sockErr = this.get('socketErr');
-                if (!sock) {
-                    if ( !sockErr ) {
-                        this.addObserver('socket', this, sendOnOpen.bind(this, msg, resolve, reject));
-                    } else {
-                        reject("Socket failed to open: " + sockErr);
-                    }
-                } 
-                else if (!sockErr && sock.isOpen()){
-                    sock.send(msg);
-                    resolve(msg);
-                } else {
-                    reject("websocket failed to open");
+            var sock = this.get('socket');
+            var sockErr = this.get('socketErr');
+            if (!sock) {
+                if ( !sockErr ) {
+                    this.addObserver('socket', this, sendOnOpen.bind(this, msg));
                 }
-            });
+            } 
+            else if (!sockErr && sock.isOpen()){
+                sock.send(msg);
+            } 
         },
         init: function () {
             this._super.apply(this, arguments);
@@ -59,8 +48,8 @@ export function initialize(container, application) {
                         this.set('socket', socket);
                     },
                     (msg) => {
-                        this.set('socket', msg);
                         this.set('socketErr', msg);
+                        this.set('socket', msg);
                     }
                 );
         },

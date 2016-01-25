@@ -43,7 +43,7 @@ module.exports = function(app) {
 
   accusationsRouter.get('/:id', function(req, res) {
     res.send({
-      'accusation': allAccusation.filter((function(a) {
+      'accusation': allAccusations.filter((function(a) {
           return a.id == req.params.id;
       }))[0]
     });
