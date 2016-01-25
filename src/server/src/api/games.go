@@ -227,10 +227,10 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		}
 	}
 
-	if *g.State == "spyGuess" && g.VictoryType == nil {
+	if *g.State != "complete" && g.LocationGuessId != nil {
 		*g.State = "complete"
 
-		if g.LocationId == body.Game.LocationGuessId {
+		if g.LocationId == g.LocationGuessId {
 			*g.VictoryType = "spyRightGuess"
 		} else {
 			*g.VictoryType = "spyWrongGuess"
