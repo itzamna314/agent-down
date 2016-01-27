@@ -32,6 +32,15 @@ export default Ember.Controller.extend({
                     this.transitionToRoute('vote', accusation);
                 });
 
+                this.get('clock').on('expired', 
+                    () => {
+                        sock.writeSocket({
+                            name: 'clock',
+                            data: {}
+                        });
+                    }
+                );
+
                 sock.on('clock', o => {
                     this.set('clock.secondsRemaining', o.secondsRemaining);
                     this.set('clock.isRunning', o.isRunning);
@@ -41,7 +50,6 @@ export default Ember.Controller.extend({
                     name: 'clock',
                     data: {}
                 });
-
             }, 
             (reason) => {
                 console.log('Error: ' + reason);

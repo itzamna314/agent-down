@@ -273,7 +273,6 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 
 	// If the clock isn't running, secondsRemaining MUST be accurate
 	if isRunning == nil || !*isRunning || !g.secondsRemaining.Valid || !g.clockStartTime.Valid {
-		log.Printf("Clock is not running\n")
 		return &GameClock{
 			GameId:           g.id,
 			SecondsRemaining: IntOrNull(g.secondsRemaining),
@@ -290,8 +289,6 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 
 	s := g.secondsRemaining.Int64
 
-	log.Printf("Raw start: %s - Raw now: %s\n", nowTicks.String, g.clockStartTime.String)
-
 	now, err := time.Parse(dbDateLayout, nowTicks.String)
 
 	if err != nil {
@@ -306,7 +303,28 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 
 	remaining := s - int64(now.Sub(startTime).Seconds())
 
-	log.Printf("Start time: %s - Now: %s - Remaining: %d\n", startTime.Format("12:00:00"), now.Format("12:00:00"), remaining)
+	if remaining <= 0 {
+		StopGameClock(db, gameId)
+
+		_, err := db.Exec(`UPDATE game
+		                      SET state = 'timeExpired'
+							    , modifiedOn = CURRENT_TIMESTAMP
+								, modifiedBy = 'dal:GetGameClock()
+						    WHERE id = ?'`, gameId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		remaining = 0
+		*isRunning = false
+
+		return &GameClock{
+			GameId:           g.id,
+			SecondsRemaining: &remaining,
+			IsRunning:        isRunning,
+		}, nil
+	}
 
 	return &GameClock{
 		GameId:           g.id,
