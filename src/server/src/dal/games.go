@@ -158,6 +158,27 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 	return FetchGame(db, id)
 }
 
+func SetLocationGuess(db *sql.DB, id int64, g *Game) (*Game, error) {
+	res, err := db.Exec(`UPDATE game 
+	  	                    SET locationGuessId = ?
+		                      , state = ?
+							  , victoryType = ?
+		                      , modifiedOn = CURRENT_TIMESTAMP
+		                      , modifiedBy = ?
+		                  WHERE id = ?`,
+		g.LocationGuessId, g.State, g.VictoryType, "dal:SetLocationGuess()", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if num, _ := res.RowsAffected(); num == 0 {
+		return nil, errors.New("Game not found")
+	}
+
+	return FetchGame(db, id)
+}
+
 func RemoveGame(db *sql.DB, id int64) error {
 	_, err := db.Exec(`DELETE pa
 		                 FROM playerAccusation pa 

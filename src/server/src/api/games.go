@@ -227,16 +227,27 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		}
 	}
 
-	if *g.State != "complete" && g.LocationGuessId != nil {
-		*g.State = "complete"
+	fmt.Printf("Body: %s\n", b)
+	fmt.Printf("Game state: %s, Location Guess Id: %d\n", body.Game.State, *body.Game.LocationGuessId)
+	fmt.Printf("Location Id: %d\n", *g.LocationId)
+
+	if g.LocationGuessId == nil && body.Game.LocationGuessId != nil {
+		g.LocationGuessId = body.Game.LocationGuessId
+
+		g.VictoryType = new(string)
+		*g.VictoryType = "guess"
 
 		if g.LocationId == g.LocationGuessId {
-			*g.VictoryType = "spyRightGuess"
+			*g.State = "spyWins"
 		} else {
-			*g.VictoryType = "spyWrongGuess"
+			*g.State = "playersWin"
 		}
 
-		g, err = dal.ReplaceGame(db, int64(id), g)
+		fmt.Printf("Game state: %s, Victory Type: %s", *g.State, *g.VictoryType)
+
+		g, err = dal.SetLocationGuess(db, int64(id), g)
+
+		fmt.Printf("Location Guess Id: %d\n", *g.LocationGuessId)
 
 		if err != nil {
 			log.Printf("Failed to guess location.")

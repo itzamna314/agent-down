@@ -67,7 +67,7 @@ export default Ember.Controller.extend({
         this.get('model').reload().then(
             (accusation) => {
                 if ( accusation.get('state') === 'guilty' ) {
-                        this.transitionToRoute('results', game);
+                        this.transitionToRoute('results', this.get('gameState.game'));
                     } else if (accusation.get('state') === 'innocent' ) {
                         this.transitionToRoute('active');
                     }

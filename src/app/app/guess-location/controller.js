@@ -74,7 +74,7 @@ export default Ember.Controller.extend({
 
                    this.transitionToRoute('results', game);
                 },
-                (msg) => {
+                (/*msg*/) => {
                     this.transitionToRoute('results', game);
                 }
             );
