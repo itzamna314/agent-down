@@ -51,6 +51,7 @@ create table if not exists accusation(
     gameId int not null, FOREIGN KEY (gameId) references game (id),
     time int not null,
     state nvarchar(255) not null default 'voting',
+    gameState nvarchar(255) not null default 'inProgress',
 	createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,

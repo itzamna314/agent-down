@@ -13,6 +13,7 @@ Router.map(function() {
   this.route('vote', {path: '/vote/:accusation_id'});
   this.route('invite-received', {path: '/invite-received/:game_id'});
   this.route('guess-location');
+  this.route('final-reckoning');
 });
 
 export default Router;
