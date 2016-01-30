@@ -10,6 +10,56 @@ var conn string
 
 var dbDateLayout string = "2006-01-02 15:04:05"
 
+type GameState string
+
+const (
+	GS_Awaiting       GameState = "awaitingPlayers"
+	GS_InProgress               = "inProgress"
+	GS_Voting                   = "voting"
+	GS_TimeExpired              = "timeExpired"
+	GS_FinalReckoning           = "finalReckoning"
+	GS_SpyWins                  = "spyWins"
+	GS_PlayersWin               = "playersWin"
+)
+
+var gameStateId map[GameState]int = map[GameState]int{
+	GS_Awaiting:       1,
+	GS_InProgress:     2,
+	GS_Voting:         3,
+	GS_TimeExpired:    4,
+	GS_FinalReckoning: 5,
+	GS_SpyWins:        6,
+	GS_PlayersWin:     7,
+}
+
+type AccusationState string
+
+const (
+	AS_Voting   AccusationState = "voting"
+	AS_Innocent                 = "innocent"
+	AS_Guilty                   = "guilty"
+)
+
+var accusationStateId map[AccusationState]int = map[AccusationState]int{
+	AS_Voting:   1,
+	AS_Innocent: 2,
+	AS_Guilty:   3,
+}
+
+type VictoryType string
+
+const (
+	VT_Guess   VictoryType = "guess"
+	VT_Accuse              = "accuse"
+	VT_Default             = "default"
+)
+
+var victoryTypeId map[VictoryType]int = map[VictoryType]int{
+	VT_Guess:   1,
+	VT_Accuse:  2,
+	VT_Default: 3,
+}
+
 func Init(c *string) {
 	conn = *c
 }

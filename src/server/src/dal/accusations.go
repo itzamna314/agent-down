@@ -14,8 +14,9 @@ func FetchAccusation(db *sql.DB, id int64) (*Accusation, error) {
 		                     , a.accusedId
 		                     , a.gameId
 		                     , a.time
-		                     , a.state
+		                     , ast.name as state
 		                  FROM accusation a
+						  JOIN accusationStateType ast on ast.id = a.stateId
 		                 WHERE a.id = ?`,
 		id)
 
@@ -106,7 +107,7 @@ func FindPlayerAccusationsAgainst(db *sql.DB, playerId int64) ([]int64, error) {
 	return ids, nil
 }
 
-func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
+func CreateAccusation(db *sql.DB, a *Accusation, state GameState) (*Accusation, error) {
 	if a.AccusedId == nil || a.AccuserId == nil || a.GameId == nil {
 		return nil, errors.New("Accuser, Accused, and Game are required")
 	}
@@ -118,24 +119,27 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	}
 
 	stateRow := tx.QueryRow(
-		`SELECT state
-		   FROM game
-		  WHERE id=?`,
+		`SELECT gst.name
+		   FROM game g
+		   JOIN gameStateType gst on gst.id = g.stateId 
+		  WHERE g.id=?`,
 		a.GameId)
 
-	var state string
-	if err := stateRow.Scan(&state); err != nil || state != "inProgress" {
-		tx.Rollback()
-		return nil, fmt.Errorf("Illegal game state %s: %s\n", state, err)
+	var gameState GameState
+	if err := stateRow.Scan(&gameState); err != nil {
+		if state != gameState {
+			tx.Rollback()
+			return nil, fmt.Errorf("Illegal game state %s: %s\n", state, err)
+		}
 	}
 
 	stateResult, err := tx.Exec(
 		`UPDATE game
-		    SET state='accusing'
+		    SET stateId=?
 		      , modifiedOn = CURRENT_TIMESTAMP
 		      , modifiedBy = 'dal:CreateAccusation()'
 		  WHERE id=?`,
-		a.GameId)
+		gameStateId[GS_Voting], a.GameId)
 
 	if ra, _ := stateResult.RowsAffected(); err != nil || ra != 1 {
 		tx.Rollback()
@@ -182,8 +186,14 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	return FetchAccusation(db, id)
 }
 
-func UpdateAccusationState(db *sql.DB, id int) (string, error) {
-	row := db.QueryRow(
+func UpdateAccusationState(db *sql.DB, id int) (*string, error) {
+	var tx, err = db.Begin()
+
+	if err != nil {
+		return nil, err
+	}
+
+	row := tx.QueryRow(
 		`SELECT COUNT(p.id) AS numPlayers
               , COALESCE(SUM(CASE WHEN pa.id IS NOT NULL THEN 1 ELSE 0 END),0) AS numVotes
               , COALESCE(SUM(pa.accuse)) AS numGuilty
@@ -195,67 +205,72 @@ func UpdateAccusationState(db *sql.DB, id int) (string, error) {
 
 	numPlayers, numVotes, numGuilty := new(int), new(int), new(int)
 
-	err := row.Scan(numPlayers, numVotes, numGuilty)
+	err = row.Scan(numPlayers, numVotes, numGuilty)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+
+	var state string
 
 	if *numVotes >= *numPlayers-1 {
 		guilty := *numGuilty == *numVotes
 
-		var state string
-
 		if guilty {
-			state = "guilty"
+			state = AS_Guilty
 		} else {
-			state = "innocent"
+			state = AS_Innocent
 		}
 
 		log.Printf("Accusation resolved as %s\n", state)
 
-		_, err := db.Exec(
+		_, err := tx.Exec(
 			`UPDATE accusation
-			    SET state = ?
+			    SET stateId = ?
 			      , modifiedOn=CURRENT_TIMESTAMP
 			      , modifiedBy='dal:UpdateAccusationState()'
 			  WHERE id=?`,
-			state,
+			accusationStateId[AccusationState(state)],
 			id)
 
-		_, err = db.Query(
+		_, err = tx.Query(
 			`UPDATE game g
 			   JOIN accusation a on a.gameId = g.id
-			    SET g.state = 'inProgress'
+			    SET g.state = ? 
 			      , g.modifiedOn = CURRENT_TIMESTAMP
 			      , g.modifiedBy = 'dal:UpdateAccusationState()'
 			  WHERE a.id=?`,
+			gameStateId[GS_InProgress],
 			id)
 
-		gameRows, err := db.Query(`SELECT g.id as gameId
+		gameRows, err := tx.Query(`SELECT g.id as gameId
 			    FROM game g
 			    JOIN accusation a on a.gameId = g.id
 			   WHERE a.id=?`,
 			id)
 
 		if err != nil {
-			return "", err
+			return nil, err
 		}
+
+		tx.Commit()
 
 		defer gameRows.Close()
 
-		if state == "innocent" {
+		if state == AS_Innocent {
 			var gameId int64
 			if !gameRows.Next() {
-				return "", err
+				return nil, err
 			}
 			if err := gameRows.Scan(&gameId); err == nil {
 				StartGameClock(db, gameId)
 			}
 		}
 
-		return state, nil
+		return &state, nil
 	}
 
-	return "voting", nil
+	state = string(AS_Voting)
+
+	return &state, nil
 }

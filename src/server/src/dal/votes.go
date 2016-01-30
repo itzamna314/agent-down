@@ -124,7 +124,6 @@ func CreateVoteTx(db *sql.DB, v *Vote, tx *sql.Tx) (*Vote, error) {
 		return nil, errors.New("Player, Accusation, and Accuse are required")
 	}
 
-	log.Printf("Using transaction\n")
 	result, err := tx.Exec(
 		"INSERT INTO playerAccusation(playerId, accusationId, accuse, createdBy) VALUES (?, ?, ?, ?)",
 		v.PlayerId,

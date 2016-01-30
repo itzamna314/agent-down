@@ -111,7 +111,7 @@ func createAccusation(w http.ResponseWriter, db *sql.DB, b []byte) {
 		return
 	}
 
-	accusation, err := dal.CreateAccusation(db, &body.Accusation)
+	accusation, err := dal.CreateAccusation(db, &body.Accusation, dal.GS_InProgress)
 
 	if err != nil {
 		log.Printf("Failed to create accusation: %s", err)

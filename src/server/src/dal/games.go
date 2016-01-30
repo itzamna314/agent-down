@@ -10,8 +10,7 @@ import (
 
 func CreateGame(db *sql.DB, g *Game) (*Game, error) {
 	result, err := db.Exec(
-		"INSERT INTO game(state, createdBy) VALUES (?, ?)",
-		g.State,
+		"INSERT INTO game(createdBy) VALUES (?)",
 		"dal:CreateGame()",
 	)
 
@@ -33,13 +32,15 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 	row := db.QueryRow(`SELECT g.id
 		                     , g.locationId
 							 , g.locationGuessId
-		                     , g.state
-		                     , g.victoryType
+		                     , gst.name as state
+		                     , vt.name as victoryType
 		                     , g.latitude
 		                     , g.longitude
 		                     , cr.id as creatorId
 		                     , spy.id as spyId
 		                  FROM game g 
+						  JOIN gameStateType gst on gst.id = g.stateId
+				     LEFT JOIN victoryType vt on vt.id = g.victoryTypeId
 		             LEFT JOIN player cr on cr.gameId = g.id and cr.isCreator = 1
 		             LEFT JOIN player spy on spy.gameId = g.id and spy.isSpy = 1
 		                 WHERE g.id = ?`,
@@ -74,14 +75,15 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
-		                        , g.state
+		                        , gst.name as state
 		                        , g.latitude
 		                        , g.longitude
 		                        , cr.id as creatorId
 		                     FROM game g
+							 JOIN gameStateType gst on gst.id = g.stateId
 		                     JOIN player cr on cr.gameId = g.id
-		                    WHERE g.state = ?`,
-		state)
+		                    WHERE g.stateId = ?`,
+		gameStateId[GameState(state)])
 
 	if err != nil {
 		return nil, err
@@ -108,13 +110,13 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 func FindAllGames(db *sql.DB) ([]*Game, error) {
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
-		                        , g.state
+		                        , gst.name as state
 		                        , g.latitude
 		                        , g.longitude
 		                        , cr.id as creatorId
 		                     FROM game g
-		                     JOIN player cr on cr.gameId = g.id
-		                    WHERE g.state = ?`)
+							 JOIN gameStateType gst on gst.id = g.stateId
+		                     JOIN player cr on cr.gameId = g.id`)
 	if err != nil {
 		return nil, err
 	}
@@ -139,13 +141,13 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 	res, err := db.Exec(`UPDATE game 
 	  	                    SET locationId = ?
-		                      , state = ?
+		                      , stateId = ?
 		                      , latitude = ?
 		                      , longitude = ?
 		                      , modifiedOn = CURRENT_TIMESTAMP
 		                      , modifiedBy = ?
 		                  WHERE id = ?`,
-		g.LocationId, g.State, g.Latitude, g.Longitude, "dal:ReplaceGame()", id)
+		g.LocationId, gameStateId[GameState(*g.State)], g.Latitude, g.Longitude, "dal:ReplaceGame()", id)
 
 	if err != nil {
 		return nil, err
@@ -159,14 +161,16 @@ func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
 }
 
 func SetLocationGuess(db *sql.DB, id int64, g *Game) (*Game, error) {
+	log.Printf("Game state: %s\n", *g.State)
+
 	res, err := db.Exec(`UPDATE game 
 	  	                    SET locationGuessId = ?
-		                      , state = ?
-							  , victoryType = ?
+		                      , stateId = ?
+							  , victoryTypeId = ?
 		                      , modifiedOn = CURRENT_TIMESTAMP
 		                      , modifiedBy = ?
 		                  WHERE id = ?`,
-		g.LocationGuessId, g.State, g.VictoryType, "dal:SetLocationGuess()", id)
+		g.LocationGuessId, gameStateId[GameState(*g.State)], victoryTypeId[VictoryType(*g.VictoryType)], "dal:SetLocationGuess()", id)
 
 	if err != nil {
 		return nil, err
@@ -234,23 +238,23 @@ func IsRealSpy(db *sql.DB, accusationId int64) (bool, error) {
 	return *accusedId == *spyId, nil
 }
 
-func Victory(db *sql.DB, accusationId int64, victoryType string, spyWins bool) error {
-	var state string
+func Victory(db *sql.DB, accusationId int64, victoryType VictoryType, spyWins bool) error {
+	var state GameState
 
 	if spyWins {
-		state = "spyWins"
+		state = GS_SpyWins
 	} else {
-		state = "playersWin"
+		state = GS_PlayersWin
 	}
 
 	_, err := db.Exec(`UPDATE game g
 		                 JOIN accusation a on a.gameId = g.id
-		                  SET g.state=?
-		                    , g.victoryType=?
+		                  SET g.stateId=?
+		                    , g.victoryTypeId=?
 		                    , g.modifiedOn=CURRENT_TIMESTAMP
 		                    , g.modifiedBy='dal:Victory()'
 		                WHERE a.id=?`,
-		state, victoryType, accusationId)
+		gameStateId[state], victoryTypeId[victoryType], accusationId)
 
 	return err
 }
@@ -307,10 +311,11 @@ func GetGameClock(db *sql.DB, gameId int64) (*GameClock, error) {
 		StopGameClock(db, gameId)
 
 		_, err := db.Exec(`UPDATE game
-		                      SET state = 'timeExpired'
+		                      SET stateId = ? 
 							    , modifiedOn = CURRENT_TIMESTAMP
 								, modifiedBy = 'dal:GetGameClock()
-						    WHERE id = ?'`, gameId)
+						    WHERE id = ?'`,
+			gameStateId[GS_TimeExpired], gameId)
 
 		if err != nil {
 			return nil, err

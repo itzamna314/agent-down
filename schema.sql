@@ -4,6 +4,41 @@ CREATE SCHEMA if not exists `agent` ;
 
 use `agent`;
 
+create table if not exists gameStateType(
+	id int primary key not null auto_increment,
+    name nvarchar(32) not null
+);
+
+insert into gameStateType(name) values
+	('awaitingPlayers'),
+    ('inProgress'),
+    ('voting'),
+    ('timeExpired'),
+    ('finalReckoning'),
+	('spyWins'),
+    ('playersWin');
+
+create table if not exists accusationStateType(
+	id int primary key not null auto_increment,
+    name nvarchar(32) not null
+);
+
+insert into accusationStateType(name) values
+	('voting'),
+    ('innocent'),
+    ('guilty');
+    
+create table if not exists victoryType (
+	id int primary key not null auto_increment,
+    name nvarchar(32) not null
+);
+
+insert into victoryType(name) values
+	('guess'),
+    ('accuse'),
+    ('default');
+
+
 create table if not exists location(
 	id int primary key not null auto_increment,
     name nvarchar(255) not null,
@@ -18,8 +53,8 @@ create table if not exists game(
 	id int primary key not null auto_increment,
     locationId int null, FOREIGN KEY (locationId) references location (id),
     locationGuessId int null, FOREIGN KEY (locationGuessId) references location (id),
-    state nvarchar(255) not null default 'created',
-    victoryType nvarchar(64),
+    stateId int not null default 1, FOREIGN KEY (stateId) references gameStateType (id),
+    victoryTypeId int null, FOREIGN KEY (victoryTypeId) references VictoryType(id),
     latitude decimal(16,12) null,
     longitude decimal(16,12) null,
     secondsRemaining int not null default 480,
@@ -50,8 +85,8 @@ create table if not exists accusation(
     accusedId int not null, FOREIGN KEY (accusedId) references player (id),
     gameId int not null, FOREIGN KEY (gameId) references game (id),
     time int not null,
-    state nvarchar(255) not null default 'voting',
-    gameState nvarchar(255) not null default 'inProgress',
+    stateId int not null default 1, FOREIGN KEY (stateId) references accusationStateType (id),
+    gameStateId int not null default 3, FOREIGN KEY (gameStateId) references gameStateType (id),
 	createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,

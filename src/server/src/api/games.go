@@ -231,13 +231,19 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		g.LocationGuessId = body.Game.LocationGuessId
 
 		g.VictoryType = new(string)
-		*g.VictoryType = "guess"
+		*g.VictoryType = string(dal.VT_Guess)
 
-		if g.LocationId == g.LocationGuessId {
-			*g.State = "spyWins"
+		log.Printf("Real location: %d, Guess: %d", g.LocationId, g.LocationGuessId)
+
+		if *g.LocationId == *body.Game.LocationGuessId {
+			*g.State = string(dal.GS_SpyWins)
+			log.Printf("spy wins")
 		} else {
-			*g.State = "playersWin"
+			*g.State = string(dal.GS_PlayersWin)
+			log.Printf("players win")
 		}
+
+		log.Printf("Setting game state: %s\n", *g.State)
 
 		g, err = dal.SetLocationGuess(db, int64(id), g)
 
