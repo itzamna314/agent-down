@@ -33,7 +33,13 @@ module.exports = function(app) {
       player: 7,
       accusation: 3,
       accuse: true
-  }];
+  }, {
+      id: '7',
+      player: 2,
+      accusation: 4,
+      accuse: true
+  }
+  ];
   
   votesRouter.get('/', function(req, res) {
     res.send({
@@ -72,7 +78,6 @@ module.exports = function(app) {
   });
 
   app.use(function (req, res, next) {
-    console.log('middleware');
     req.testing = 'testing';
     return next();
   });

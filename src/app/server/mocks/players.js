@@ -10,8 +10,8 @@ module.exports = function(app) {
       hasAccused: false,
       game: 1,
       isCreator: true,
-      accusationMade: null,
-      accusationsAgainst: [1],
+      accusationsMade: null,
+      accusationsAgainst: [1,4],
       votes: []
   }, {
       id: 2,
@@ -20,7 +20,7 @@ module.exports = function(app) {
       hasAccused: null,
       game: 1,
       isCreator: false,
-      accusationMade: 1,
+      accusationsMade: [4],
       accusationsAgainst: [],
       votes: [1]
   }, {
@@ -30,7 +30,7 @@ module.exports = function(app) {
       hasAccused: true,
       game: 1,
       isCreator: false,
-      accusationMade: [1],
+      accusationsMade: [1],
       accusationsAgainst: [],
       votes: [2]
   }, {
@@ -46,7 +46,7 @@ module.exports = function(app) {
       hasAccused: true,
       game: 3,
       isCreator: false,
-      accusationMade: [3],
+      accusationsMade: [3],
       accusationsAgainst: [2],
       votes: [4]
   }, {
@@ -56,7 +56,7 @@ module.exports = function(app) {
       hasAccused: true,
       game: 3,
       isCreator: false,
-      accusationMade: [2],
+      accusationsMade: [2],
       accusationsAgainst: [3],
       votes: [3]
   }, {
@@ -66,7 +66,7 @@ module.exports = function(app) {
       hasAccused: true,
       game: 3,
       isCreator: false,
-      accusationMade: [],
+      accusationsMade: [],
       accusationsAgainst: [],
       votes: [5,6]
   }];

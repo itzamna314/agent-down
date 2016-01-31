@@ -14,6 +14,7 @@ module.exports = function(app) {
       latitude: 47.6183360,
       longitude: -122.3535720, 
       players: [1,2,3],
+      secondsRemaining: 5,
       victoryType: null,
       accusations: [1]
   }, {
@@ -62,6 +63,8 @@ module.exports = function(app) {
   });
 
   gamesRouter.get('/:id', function(req, res) {
+    console.log('get games by id ' + req.params.id)
+      
     res.send({
       'game': allGames.filter((function(g) {
           return g.id == req.params.id;
@@ -83,7 +86,6 @@ module.exports = function(app) {
   });
 
   app.use(function (req, res, next) {
-    console.log('middleware');
     req.testing = 'testing';
     return next();
   });

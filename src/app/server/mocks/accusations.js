@@ -6,25 +6,36 @@ module.exports = function(app) {
   var allAccusations = [
       {
           'id':1,
-          'accuser':2,
+          'accuser':3,
           'accused':1,
           'game':1,
           'votes':[1,2],
-          'state':'voting'
+          'state':'voting',
+          'gameState':'inProgress'
       },{
           'id':2,
           'accuser':6,
           'accused':5,
           'game':3,
           'votes':[3,5],
-          'state':'innocent'
+          'state':'innocent',
+          'gameState':'inProgress'
       },{
           'id':3,
           'accuser':5,
           'accused':6,
           'game':3,
           'votes':[4,6],
-          'state':'guilty'
+          'state':'guilty',
+          'gameState':'inProgress'
+      },{
+          'id':4,
+          'accuser':2,
+          'accused':1,
+          'game':1,
+          'votes':[7],
+          'state':'voting',
+          'gameState':'finalReckoning'
       }
   ];
 
@@ -65,7 +76,6 @@ module.exports = function(app) {
   });
 
   app.use(function (req, res, next) {
-    console.log('middleware');
     req.testing = 'testing';
     return next();
   });

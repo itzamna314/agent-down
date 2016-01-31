@@ -107,7 +107,7 @@ func FindPlayerAccusationsAgainst(db *sql.DB, playerId int64) ([]int64, error) {
 	return ids, nil
 }
 
-func CreateAccusation(db *sql.DB, a *Accusation, state GameState) (*Accusation, error) {
+func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	if a.AccusedId == nil || a.AccuserId == nil || a.GameId == nil {
 		return nil, errors.New("Accuser, Accused, and Game are required")
 	}
@@ -125,12 +125,30 @@ func CreateAccusation(db *sql.DB, a *Accusation, state GameState) (*Accusation, 
 		  WHERE g.id=?`,
 		a.GameId)
 
-	var gameState GameState
-	if err := stateRow.Scan(&gameState); err != nil {
-		if state != gameState {
-			tx.Rollback()
-			return nil, fmt.Errorf("Illegal game state %s: %s\n", state, err)
-		}
+	var accusationGameState GameState
+	if err := stateRow.Scan(&accusationGameState); err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Illegal game state %s: %s\n", err)
+	}
+
+	previousAccusationRows, err := tx.Query(
+		`SELECT id
+		   FROM accusation a
+		  WHERE a.accuserId = ?
+		    AND a.gameId = ?
+			AND a.gameStateId = ?`,
+		a.AccuserId,
+		a.GameId,
+		gameStateId[accusationGameState])
+
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Failed to check if accusation allowed")
+	}
+
+	if previousAccusationRows.Next() || previousAccusationRows.Err() != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Duplicate accusation")
 	}
 
 	stateResult, err := tx.Exec(
@@ -151,10 +169,12 @@ func CreateAccusation(db *sql.DB, a *Accusation, state GameState) (*Accusation, 
 			                   , accuserId
 			                   , accusedId
 			                   , gameId
+							   , gameStateId
 			                   , createdBy
 			                   ) 
 	                      SELECT TIMESTAMPDIFF(SECOND, clockStartTime, CURRENT_TIMESTAMP)
 			                   , ?
+							   , ?
 			          	       , ?
 			          	       , ?
 			          	       , 'dal:CreateAccusation()'
@@ -164,6 +184,7 @@ func CreateAccusation(db *sql.DB, a *Accusation, state GameState) (*Accusation, 
 		a.AccuserId,
 		a.AccusedId,
 		a.GameId,
+		gameStateId[accusationGameState],
 		a.GameId,
 	)
 

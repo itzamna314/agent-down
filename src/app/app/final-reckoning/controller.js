@@ -22,6 +22,10 @@ export default Ember.Controller.extend({
                 var id = game.get('id');
                 var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
+                sock.on('nominated', (data) => {
+                    this.set('accuser', this.store.findRecord('player', data.playerId));
+                });
+
                 this.set('socket', sock);
             }, 
             (reason) => {

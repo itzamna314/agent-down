@@ -1,7 +1,7 @@
 
 {{#if isNotSpy }}
 	<span>{{location.name}}</span>
-	<img src={{location.image}} />
+	<img src={{location.image}} height="300" width="300"/>
 {{else}}
 	<span>You are the spy!</span>
 	<button class="guess-location" {{action 'click'}}>View locations</button>

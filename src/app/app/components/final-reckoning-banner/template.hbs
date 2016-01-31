@@ -1,5 +1,11 @@
 <div>
-    <span>{{accuserName}} turn to accuse</span>
+    {{#if accuser }}
+        <span>{{accuserName}} turn to accuse</span>
+    {{else if me.isCreator}}
+        <span>Nominate the next accuser</span>
+    {{else}}
+        <span>Waiting for game creator to nominate an accuser</span>
+    {{/if}}
 </div>
 
 {{yield}}

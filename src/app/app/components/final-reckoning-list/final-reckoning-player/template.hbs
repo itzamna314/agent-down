@@ -1,0 +1,12 @@
+<div>
+    <span>{{player.name}}</span>
+    {{#if hasAccused }}
+        <span>accused {{getAccused }}</span>
+    {{else if me.isCreator}} 
+        <button>Nominate</button>
+    {{else}}
+        <span>is waiting to accuse</span>
+    {{/if}}
+</div>
+
+{{yield}}

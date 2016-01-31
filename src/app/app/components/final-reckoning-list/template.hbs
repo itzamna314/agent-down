@@ -1,0 +1,7 @@
+{{#each players as |p|}}
+    {{final-reckoning-list/final-reckoning-player player=p me=me action="nominatePlayer"}}
+{{else}}
+	<p>Oh shit</p>
+{{/each}}
+
+{{yield}}

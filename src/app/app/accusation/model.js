@@ -5,5 +5,6 @@ export default DS.Model.extend({
     accused: DS.belongsTo('player', {async: true}),
     game: DS.belongsTo('game', {async: true}),
     votes: DS.hasMany('vote', {async: true}),
-    state: DS.attr('string')
+    state: DS.attr('string'),
+    gameState: DS.attr('string')
 });
