@@ -4,6 +4,6 @@
 
 {{game-location location=gameState.game.location isSpy=gameState.player.isSpy viewLocations="viewLocations"}}
 
-{{active-player-list players=gameState.game.players me=gameState.player action="accuse"}}
+{{active-player-list players=gameState.game.players me=gameState.player gameState='inProgress' action="accuse"}}
 
 {{outlet}}

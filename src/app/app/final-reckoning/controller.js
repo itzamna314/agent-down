@@ -3,6 +3,7 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     socket: null,
+    accuser: null,
     init: function() {
         var gs = this.get('gameState');
         
@@ -23,7 +24,7 @@ export default Ember.Controller.extend({
                 var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
                 sock.on('nominated', (data) => {
-                    this.set('accuser', this.store.findRecord('player', data.playerId));
+                    this.set('accuser', this.store.findRecord('player', data.player));
                 });
 
                 this.set('socket', sock);
@@ -33,5 +34,18 @@ export default Ember.Controller.extend({
                 this.transitionToRoute('index');
             }
         );
+    },
+    iAmAccuser: Ember.computed('player.id', 'accuser.id', function() {
+        return this.get('player.id') === this.get('accuser.id');
+    }),
+    actions: {
+        nominatePlayer: function(player) {
+            this.get('socket').writeSocket({
+                name: 'nominated',
+                data: {
+                    player: player.get('id')
+                }
+            });
+        }
     }
 });

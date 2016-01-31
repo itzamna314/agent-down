@@ -2,6 +2,9 @@
 
 {{final-reckoning-banner me=gameState.player accuser=accusingPlayer}}
 
-{{final-reckoning-list me=gameState.player players=gameState.game.players}}
-
+{{#if iAmAccuser }}
+    {{active-player-list me=gameState.player players=gameState.game.players}}
+{{else }}
+    {{final-reckoning-list me=gameState.player players=gameState.game.players gameState='finalReckoning' action="nominatePlayer"}}
+{{/if}}
 {{outlet}}
