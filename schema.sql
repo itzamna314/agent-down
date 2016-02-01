@@ -54,7 +54,7 @@ create table if not exists game(
     locationId int null, FOREIGN KEY (locationId) references location (id),
     locationGuessId int null, FOREIGN KEY (locationGuessId) references location (id),
     stateId int not null default 1, FOREIGN KEY (stateId) references gameStateType (id),
-    victoryTypeId int null, FOREIGN KEY (victoryTypeId) references VictoryType(id),
+    victoryTypeId int null, FOREIGN KEY (victoryTypeId) references victoryType(id),
     latitude decimal(16,12) null,
     longitude decimal(16,12) null,
     secondsRemaining int not null default 480,
@@ -93,7 +93,7 @@ create table if not exists accusation(
     modifiedBy nvarchar(255) null
 );
 
-create unique index uq_accusation on accusation(accuserId, accusedId, gameId);
+create unique index uq_accusation on accusation(accuserId, accusedId, gameId, gameStateId);
 
 create table if not exists playerAccusation(
 	id int primary key not null auto_increment,

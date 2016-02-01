@@ -54,8 +54,6 @@ export default Ember.Controller.extend({
                         accuse: isGuilty
                     }
                 });
-
-                this.onVoted();
             },
             (reason) => {
                 alert('Could not vote: ' + reason);
@@ -63,14 +61,21 @@ export default Ember.Controller.extend({
         );
     },
     onVoted: function() {
-        
         this.get('model').reload().then(
             (accusation) => {
                 if ( accusation.get('state') === 'guilty' ) {
-                        this.transitionToRoute('results', this.get('gameState.game'));
-                    } else if (accusation.get('state') === 'innocent' ) {
+                    this.transitionToRoute('results', this.get('gameState.game'));
+                } else if (accusation.get('state') === 'innocent' ) {
+                    if (accusation.get('gameState') === 'inProgress' ) {
                         this.transitionToRoute('active');
+                    } else if ( accusation.get('gameState') === 'finalReckoning' ) {
+                        this.transitionToRoute('final-reckoning');
+                    } else {
+                        alert('illegal accusation game state: ' + this.get('gameState'));
                     }
+                } else {
+                    alert('illegal accusation state: ' + this.get('state'));
+                }
             }
         );
     },

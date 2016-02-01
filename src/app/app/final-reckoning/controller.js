@@ -24,7 +24,7 @@ export default Ember.Controller.extend({
                 var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
                 sock.on('nominated', (data) => {
-                    this.set('accuser', this.store.findRecord('player', data.player));
+                    this.set('accuser', this.store.findRecord('player', data.playerId));
                 });
 
                 this.set('socket', sock);
@@ -35,17 +35,49 @@ export default Ember.Controller.extend({
             }
         );
     },
-    iAmAccuser: Ember.computed('player.id', 'accuser.id', function() {
-        return this.get('player.id') === this.get('accuser.id');
+    iAmAccuser: Ember.computed('gameState.player.id', 'accuser.id', function() {
+        var playerId = this.get('gameState.player.id');
+        var accuserId = this.get('accuser.id');
+        
+        return playerId && accuserId && accuserId === playerId;
     }),
     actions: {
         nominatePlayer: function(player) {
             this.get('socket').writeSocket({
                 name: 'nominated',
                 data: {
-                    player: player.get('id')
+                    playerId: player.get('id')
                 }
             });
-        }
+        },
+        accusePlayer:function(player){
+            var gs = this.get('gameState');
+            var sock = this.get('socket');
+
+            gs.accuse(this.get('store'), player).then(
+                (accusation) => {
+                    sock.writeSocket({
+                        name: 'accused',
+                        data: {
+                            accusation: accusation.get('id')
+                        }
+                    });
+
+                    gs.vote(this.get('store'), accusation, true).then(
+                        (/*acc*/) => {
+                            sock.writeSocket({
+                            name: 'voted',
+                            data: {
+                                accusation: accusation.get('id')
+                            }
+                        });
+                    });
+
+                    this.transitionToRoute('vote', accusation);
+            },
+            (reason) => {
+                alert('Could not accuse ' + player.get('name') + ': ' + reason);
+            });
+        },
     }
 });

@@ -7,6 +7,9 @@ export default Ember.Component.extend({
     getAccused: Ember.computed('player.accusationsMade.@each.accuser', function() { 
         return this.get('player.accusationsMade').filterBy('gameState','finalReckoning')[0].get('accused.name');
     }),
+    canNominate: Ember.computed('me.isCreator', 'accuser', function() {
+        return this.get('me.isCreator') && !this.get('accuser');
+    }),
     actions: {
         nominate(player) {
             this.sendAction("nominate", player);

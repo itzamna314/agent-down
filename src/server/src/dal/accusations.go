@@ -15,13 +15,15 @@ func FetchAccusation(db *sql.DB, id int64) (*Accusation, error) {
 		                     , a.gameId
 		                     , a.time
 		                     , ast.name as state
+							 , gst.name as gameState
 		                  FROM accusation a
 						  JOIN accusationStateType ast on ast.id = a.stateId
+						  JOIN gameStateType gst on gst.id = a.gameStateId
 		                 WHERE a.id = ?`,
 		id)
 
 	dto := newAccusationDto()
-	err := row.Scan(dto.id, dto.accuserId, dto.accusedId, dto.gameId, dto.time, dto.state)
+	err := row.Scan(dto.id, dto.accuserId, dto.accusedId, dto.gameId, dto.time, dto.state, dto.gameState)
 
 	if err != nil {
 		return nil, err
@@ -119,17 +121,19 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	}
 
 	stateRow := tx.QueryRow(
-		`SELECT gst.name
+		`SELECT gst.name as gameState
 		   FROM game g
 		   JOIN gameStateType gst on gst.id = g.stateId 
 		  WHERE g.id=?`,
 		a.GameId)
 
-	var accusationGameState GameState
-	if err := stateRow.Scan(&accusationGameState); err != nil {
+	var gameState string
+	if err := stateRow.Scan(&gameState); err != nil {
 		tx.Rollback()
-		return nil, fmt.Errorf("Illegal game state %s: %s\n", err)
+		return nil, fmt.Errorf("Illegal game state: %s\n", err)
 	}
+
+	accusationGameState := GameState(gameState)
 
 	previousAccusationRows, err := tx.Query(
 		`SELECT id
@@ -207,7 +211,7 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 	return FetchAccusation(db, id)
 }
 
-func UpdateAccusationState(db *sql.DB, id int) (*string, error) {
+func UpdateAccusationState(db *sql.DB, id int) (*AccusationState, error) {
 	var tx, err = db.Begin()
 
 	if err != nil {
@@ -218,21 +222,24 @@ func UpdateAccusationState(db *sql.DB, id int) (*string, error) {
 		`SELECT COUNT(p.id) AS numPlayers
               , COALESCE(SUM(CASE WHEN pa.id IS NOT NULL THEN 1 ELSE 0 END),0) AS numVotes
               , COALESCE(SUM(pa.accuse)) AS numGuilty
+			  , MAX(g.id) AS gameId
            FROM player p 
            JOIN game g ON g.id = p.gameId
            JOIN accusation a ON a.gameId = g.id
       LEFT JOIN playerAccusation pa ON pa.playerId = p.id AND pa.accusationId = a.id
           WHERE a.id=?`, id)
 
-	numPlayers, numVotes, numGuilty := new(int), new(int), new(int)
+	numPlayers, numVotes, numGuilty, gameId := new(int), new(int), new(int), new(int)
 
-	err = row.Scan(numPlayers, numVotes, numGuilty)
+	err = row.Scan(numPlayers, numVotes, numGuilty, gameId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var state string
+	log.Println("Got counts")
+
+	var state AccusationState
 
 	if *numVotes >= *numPlayers-1 {
 		guilty := *numGuilty == *numVotes
@@ -251,47 +258,43 @@ func UpdateAccusationState(db *sql.DB, id int) (*string, error) {
 			      , modifiedOn=CURRENT_TIMESTAMP
 			      , modifiedBy='dal:UpdateAccusationState()'
 			  WHERE id=?`,
-			accusationStateId[AccusationState(state)],
+			accusationStateId[state],
 			id)
+
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		log.Println("Set accusation state")
 
 		_, err = tx.Query(
 			`UPDATE game g
 			   JOIN accusation a on a.gameId = g.id
-			    SET g.state = ? 
+			    SET g.stateId = ? 
 			      , g.modifiedOn = CURRENT_TIMESTAMP
 			      , g.modifiedBy = 'dal:UpdateAccusationState()'
 			  WHERE a.id=?`,
 			gameStateId[GS_InProgress],
 			id)
 
-		gameRows, err := tx.Query(`SELECT g.id as gameId
-			    FROM game g
-			    JOIN accusation a on a.gameId = g.id
-			   WHERE a.id=?`,
-			id)
-
 		if err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 
+		log.Println("Set game state")
+
 		tx.Commit()
 
-		defer gameRows.Close()
-
 		if state == AS_Innocent {
-			var gameId int64
-			if !gameRows.Next() {
-				return nil, err
-			}
-			if err := gameRows.Scan(&gameId); err == nil {
-				StartGameClock(db, gameId)
-			}
+			StartGameClock(db, int64(*gameId))
 		}
 
 		return &state, nil
 	}
 
-	state = string(AS_Voting)
+	state = AS_Voting
 
 	return &state, nil
 }

@@ -6,7 +6,7 @@ export default Ember.Component.extend({
                 if ( this.get('me.id') === this.get('accuser.id') ) {
                     return 'Your';
                 } else {
-                    return `{accuser.name}'s`;
+                    return `${this.get('accuser.name')}'s`;
                 }                    
             }
         )

@@ -153,7 +153,8 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 			Longitude: command.Data["longitude"].(float64),
 		}
 		h.handleCreated(&d)
-	case "joined":
+
+	case "left", "kicked", "nominated", "joined":
 		playerId, err := h.parsePlayerId(command)
 
 		if err != nil {
@@ -162,24 +163,7 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 		}
 
 		d := GameData{
-			Command:  "joined",
-			PlayerId: *playerId,
-		}
-
-		if err := h.broadcastGameMessage(d, gameId); err != nil {
-			log.Printf("Failed to join game %d: %s\n", gameId, err)
-		}
-
-	case "left":
-		playerId, err := h.parsePlayerId(command)
-
-		if err != nil {
-			log.Printf("Failed to join game %d: %s\n", gameId, err)
-			return
-		}
-
-		d := GameData{
-			Command:  "left",
+			Command:  command.Name,
 			PlayerId: *playerId,
 		}
 
@@ -188,41 +172,15 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 		}
 		//h.unregister <- c
 
-	case "abandoned":
+	case "abandoned", "started", "voted":
 		d := EmptyData{
-			Command: "abandoned",
+			Command: command.Name,
 		}
 
 		if err := h.broadcastGameMessage(d, gameId); err != nil {
 			log.Printf("Failed to handle accused: %v. %v\n", d, err)
 		}
 		//h.unregister <- c
-
-	case "kicked":
-		playerId, err := h.parsePlayerId(command)
-
-		if err != nil {
-			log.Printf("Failed to join game %d: %s\n", gameId, err)
-			return
-		}
-
-		d := GameData{
-			Command:  "kicked",
-			PlayerId: *playerId,
-		}
-
-		if err := h.broadcastGameMessage(d, gameId); err != nil {
-			log.Printf("Failed to handle accused: %v. %v\n", d, err)
-		}
-
-	case "started":
-		d := EmptyData{
-			Command: "started",
-		}
-
-		if err := h.broadcastGameMessage(d, gameId); err != nil {
-			log.Printf("Failed to handle accused: %v. %v\n", d, err)
-		}
 
 	case "accused":
 		d := AccuseData{
@@ -232,15 +190,6 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 
 		if err := h.broadcastGameMessage(d, gameId); err != nil {
 			log.Printf("Failed to handle accused: %v. %v\n", d, err)
-		}
-
-	case "voted":
-		d := EmptyData{
-			Command: "voted",
-		}
-
-		if err := h.broadcastGameMessage(d, gameId); err != nil {
-			log.Printf("Failed to handle voted: %v. %v\n", d, err)
 		}
 
 	case "clock":
