@@ -62,6 +62,22 @@ func CreatePlayer(db *sql.DB, p *Player) (*Player, error) {
 		return nil, errors.New("Player name is required")
 	}
 
+	if p.GameId != nil {
+		row := db.QueryRow(
+			`SELECT gst.name AS gameState
+		   FROM game g
+		   JOIN gameStateType gst on gst.id = g.stateId
+		  WHERE g.id=?`,
+			p.GameId)
+
+		var gameState string
+		err := row.Scan(&gameState)
+
+		if err != nil || GameState(gameState) != GS_Awaiting {
+			return nil, err
+		}
+	}
+
 	result, err := db.Exec(
 		"INSERT INTO player(name, gameId, isCreator, createdBy) VALUES (?, ?, ?, ?)",
 		p.Name,
@@ -122,6 +138,22 @@ func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
 }
 
 func ReplacePlayer(db *sql.DB, id int64, p *Player) (*Player, error) {
+	if p.GameId != nil {
+		row := db.QueryRow(
+			`SELECT gst.name AS gameState
+		   FROM game g
+		   JOIN gameStateType gst on gst.id = g.stateId
+		  WHERE g.id=?`,
+			p.GameId)
+
+		var gameState string
+		err := row.Scan(&gameState)
+
+		if err != nil || GameState(gameState) != GS_Awaiting {
+			return nil, err
+		}
+	}
+
 	_, err := db.Exec(`UPDATE player 
 	  	                  SET name = ?
 		                    , gameId = ?
