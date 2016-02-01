@@ -311,13 +311,13 @@ func UpdateAccusationState(db *sql.DB, id int) (*AccusationState, error) {
 				return nil, err
 			}
 
-			if numAccused == numPlayers {
-				res, err := db.Exec(`UPDATE game g
-				                        SET g.stateId = ?
-					                     , g.victoryType = ?
-					                     , g.modifiedOn = CURRENT_TIMESTAMP
-					                     , g.modifiedBy = 'dal:UpdateAccusationState().byDefault'
-			                         WHERE g.id = ?`,
+			if numAccused == *numPlayers {
+				_, err := db.Exec(`UPDATE game g
+				                      SET g.stateId = ?
+				                        , g.victoryType = ?
+				                        , g.modifiedOn = CURRENT_TIMESTAMP
+				                        , g.modifiedBy = 'dal:UpdateAccusationState().byDefault'
+			                        WHERE g.id = ?`,
 					gameStateId[GS_SpyWins],
 					victoryTypeId[VT_Default],
 					gameId)
