@@ -14,7 +14,7 @@ export default Ember.Component.extend({
     wonByDefault: Ember.computed('game', 'game.victoryType', function() {
         return this.get('game.victoryType') === 'default';
     }),
-    accusedName: Ember.computed('game.accusations.@each.state', function() {
+    accusedName: Ember.computed('game', 'game.accusations.@each.state', function() {
         var guiltyAcc = this.get('game.accusations').filterBy('state', 'guilty')[0];
         if ( guiltyAcc ) {
             return guiltyAcc.get('accused.name');
@@ -22,7 +22,7 @@ export default Ember.Component.extend({
 
         return '';
     }),
-    locationGuess: Ember.computed('game.locationGuess', function() {
+    locationGuess: Ember.computed('game', 'game.locationGuess', function() {
         return this.get('game.locationGuess.name');
     })
 });

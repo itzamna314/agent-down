@@ -107,9 +107,3 @@ create table if not exists playerAccusation(
 );
 
 create unique index uq_playerAccusation on playerAccusation(playerId, accusationId);
-
-insert into location (name, imagePath, createdOn, createdBy) values
-	('beach', 'http://freedesignfile.com/upload/2013/08/Cartoon-Tropical-Beach-vector-02.jpg', CURRENT_TIMESTAMP, 'seedData')
-  , ('moon', 'http://www.webweaver.nu/clipart/img/nature/planets/cartoon-moon.png', CURRENT_TIMESTAMP, 'seedData')
-    
-
