@@ -27,7 +27,16 @@ export default Ember.Controller.extend({
                     this.set('accuser', this.store.findRecord('player', data.playerId));
                 });
 
+                sock.on('accused', (data) => {
+                    var accusation = data.accusation;
+                    this.transitionToRoute('vote', accusation);
+                });
+
                 this.set('socket', sock);
+
+                if ( game.get('victoryType') == 'default' ) {
+                    this.transitionToRoute('results', game);
+                }
             }, 
             (reason) => {
                 console.log('Error: ' + reason);

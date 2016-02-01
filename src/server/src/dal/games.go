@@ -247,6 +247,9 @@ func Victory(db *sql.DB, accusationId int64, victoryType VictoryType, spyWins bo
 		state = GS_PlayersWin
 	}
 
+	log.Printf("Victory type: %s, Game State: %s, spyWins: %v\n", victoryType, state, spyWins)
+	log.Printf("victory id: %d, game state id: %d", victoryTypeId[victoryType], gameStateId[state])
+
 	_, err := db.Exec(`UPDATE game g
 		                 JOIN accusation a on a.gameId = g.id
 		                  SET g.stateId=?

@@ -22,6 +22,8 @@ type gamesRequest struct {
 }
 
 func VotedGuilty(accusationId *int64, db *sql.DB) {
+	log.Println("Voted guilty")
+
 	realSpy, err := dal.IsRealSpy(db, *accusationId)
 
 	if err != nil {
@@ -30,9 +32,13 @@ func VotedGuilty(accusationId *int64, db *sql.DB) {
 	}
 
 	if realSpy {
-		dal.Victory(db, *accusationId, "vote", false)
+		err = dal.Victory(db, *accusationId, dal.VT_Accuse, false)
 	} else {
-		dal.Victory(db, *accusationId, "vote", true)
+		err = dal.Victory(db, *accusationId, dal.VT_Accuse, true)
+	}
+
+	if err != nil {
+		log.Printf("Failed to set victory: %s\n", err)
 	}
 }
 
@@ -195,6 +201,8 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		http.Error(w, "Could not read body", 400)
 		return
 	}
+
+	log.Printf("Game State: %s\n", body.Game.State)
 
 	g, err := dal.ReplaceGame(db, int64(id), &body.Game)
 

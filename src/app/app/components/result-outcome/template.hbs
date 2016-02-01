@@ -5,5 +5,14 @@
         You Lose!
     {{/if}}
 </div>
+<div> 
+    {{#if wonByAccusation }}
+        <span>Players chose to accuse {{accusedName}}</span>
+    {{else if wonBySpyGuess }}
+        <span>Spy guessed {{locationGuess}}</span>
+    {{else}}
+        <span>Players failed to unanimously accuse anyone</span>
+    {{/if}}
+</div>
 
 {{yield}}

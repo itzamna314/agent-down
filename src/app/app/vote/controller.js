@@ -69,13 +69,11 @@ export default Ember.Controller.extend({
                     if (accusation.get('gameState') === 'inProgress' ) {
                         this.transitionToRoute('active');
                     } else if ( accusation.get('gameState') === 'finalReckoning' ) {
-                        this.transitionToRoute('final-reckoning');
+                        this.transitionToRoute('final-reckoning', accusation.get('game'));
                     } else {
                         alert('illegal accusation game state: ' + this.get('gameState'));
                     }
-                } else {
-                    alert('illegal accusation state: ' + this.get('state'));
-                }
+                } 
             }
         );
     },

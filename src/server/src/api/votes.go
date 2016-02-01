@@ -149,6 +149,8 @@ func createVote(w http.ResponseWriter, db *sql.DB, b []byte) {
 		log.Printf("Failed to update accusation state: %s\n", err)
 	}
 
+	log.Printf("Resulting accusation state: %s (guilty: %s)\n", *state, dal.AS_Guilty)
+
 	if *state == dal.AS_Guilty {
 		VotedGuilty(vote.AccusationId, db)
 	}

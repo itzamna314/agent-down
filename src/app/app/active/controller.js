@@ -45,6 +45,9 @@ export default Ember.Controller.extend({
                     if ( o.secondsRemaining <= 0 ) {
                         this.set('clock.secondsRemaining', 0);
                         this.set('clock.isRunning', false);
+                        var g = this.get('gameState.game');
+                        g.set('state', 'finalReckoning');
+                        g.save();
                         this.transitionToRoute('final-reckoning', game); 
                     } else {
                         this.set('clock.secondsRemaining', o.secondsRemaining);
