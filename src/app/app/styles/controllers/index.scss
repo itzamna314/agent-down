@@ -1,0 +1,56 @@
+div.index {
+    font-size: 185%;
+    margin-top: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    div.banner {
+        font-weight: bold;
+    }
+
+    div.codename {
+        margin-top: 10px;
+    }
+
+    div.create-game {
+        margin-top: 5px;
+    }
+
+    div.join-game {
+        margin-top: 5px;
+    }
+
+    button {
+        box-shadow: 1px 1px 1px 1px  grey;
+    }
+
+    div.welcome-main {
+        position: fixed;
+        display: inline-block;
+        width: 100%;
+        margin-top: 35px;
+        margin-left: auto;
+        margin-right: auto;
+        background: url(http://s3-us-west-2.amazonaws.com/agent-down-images/assets/spy_homepage_graphic.svg) no-repeat;
+        background-size: contain;
+        height: 100%;
+    }
+
+    div.welcome-intro {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 150px;
+        width: 150px;
+        height: 150px;
+        font-size: 70%;
+        border: 1px solid grey;
+        padding: 10px;
+        background: rgba(255,255,255,0.5);
+        box-shadow: 1px 1px 1px 1px rgba(200,200,200,0.75);
+    }
+
+    p.welcome-intro {
+        position: relative;
+    }
+}
+

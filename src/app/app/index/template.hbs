@@ -1,13 +1,29 @@
+<div class="controller index">
+    <div class="banner">
+        <span>Welcome to AGENT DOWN</span>
+    </div>
 
-<div>
-    {{enter-nickname nickname=nickname}}
-</div>
+    <div class="codename">
+        {{enter-nickname nickname=nickname}}
+    </div>
 
-<div>
-    <button class="create-game" {{action "create"}}>Create</button>
-</div>
-<div>
-    <button class="join-game" {{action "join"}}>Join</button>
+    <div class="create-game">
+        <button class="create-game" {{action "create"}}>Create New Team</button>
+    </div>
+    <div class="join-game">
+        <button class="join-game" {{action "join"}}>Join Team</button>
+    </div>
+
+    <div class="welcome-main">
+        <div class="welcome-intro">
+            <p class="welcome-intro">
+                AGENT DOWN is a hidden identities game of skill and intrigue.
+                Through careful questioning, players try to guess the identity of the spy.
+                Meanwhile, the spy tries to determine the secret location.
+                Click {{#link-to rules}}here{{/link-to}} for complete rules.
+            </p>
+        </div>
+    </div>
 </div>
 
 {{outlet}}

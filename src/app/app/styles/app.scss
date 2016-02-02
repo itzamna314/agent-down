@@ -1,0 +1,22 @@
+@import 'components/agent-down-header.scss';
+@import 'components/agent-down-footer.scss';
+@import 'controllers/index.scss';
+
+* {
+    margin: 0;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+.controller {
+    height: 500px;
+}
+
+
