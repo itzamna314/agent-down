@@ -34,7 +34,7 @@ export default Ember.Controller.extend({
 
                 this.set('socket', sock);
 
-                if ( game.get('victoryType') == 'default' ) {
+                if ( game.get('victoryType') === 'default' ) {
                     this.transitionToRoute('results', game);
                 }
             }, 

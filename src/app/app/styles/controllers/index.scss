@@ -28,6 +28,7 @@ div.index {
         position: fixed;
         display: inline-block;
         width: 95%;
+        height: 50%;
         margin-top: 35px;
         margin-left: auto;
         margin-right: auto;
@@ -35,13 +36,17 @@ div.index {
         background-size: contain;
     }
 
+    div.welcome-push {
+        margin-top: 35%;
+        margin-bottom:1px;
+    }
+
     div.welcome-intro {
         margin-left: auto;
         margin-right: auto;
-        margin-top: 43%;
-        width: 150px;
-        height: 150px;
-        font-size: 70%;
+        width: 50%;
+        height: 35%;
+        font-size: 60%;
         border: 1px solid grey;
         padding: 10px;
         background: rgba(255,255,255,0.5);
