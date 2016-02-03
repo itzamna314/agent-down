@@ -1,11 +1,17 @@
 div.index {
     font-size: 185%;
-    margin-top: 20px;
     margin-left: 10px;
     margin-right: 10px;
+    background: url(https://s3-us-west-2.amazonaws.com/agent-down-images/assets/welcome.svg) no-repeat;
+    background-size: contain;
 
-    div.banner {
-        font-weight: bold;
+    div.index-push-top {
+        height: 75px;
+        margin-top: -30px;
+    }
+
+    div.index-push-bottom {
+        height: 50px;
     }
 
     div.codename {
@@ -34,10 +40,11 @@ div.index {
         margin-right: auto;
         background: url(http://s3-us-west-2.amazonaws.com/agent-down-images/assets/spy_homepage_graphic.svg) no-repeat;
         background-size: contain;
+        background-position-x: center;
     }
 
     div.welcome-push {
-        margin-top: 35%;
+        height: 35%;
         margin-bottom:1px;
     }
 
