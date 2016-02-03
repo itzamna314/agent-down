@@ -6,7 +6,7 @@ div.index {
     background-size: contain;
 
     div.index-push-top {
-        height: 75px;
+        height: 185px;
         margin-top: -30px;
     }
 
@@ -16,26 +16,35 @@ div.index {
 
     div.codename {
         margin-top: 10px;
+
+        input {
+            background: transparent;
+            border: 1px solid silver;
+            @include border-radius(5px);
+            background-color: light grey;
+            font-weight: bold;
+            width: 100%;
+        }
     }
 
-    div.create-game {
+    div.create-game,div.join-game {
         margin-top: 5px;
-    }
-
-    div.join-game {
-        margin-top: 5px;
+        display:inline-block;
     }
 
     button {
         box-shadow: 1px 1px 1px 1px  grey;
+        @include border-radius(5px);
+        background: transparent;
+        border:0;
     }
 
     div.welcome-main {
         position: fixed;
-        display: inline-block;
+        display: block;
         width: 95%;
         height: 50%;
-        margin-top: 35px;
+        margin-top: 10px;
         margin-left: auto;
         margin-right: auto;
         background: url(http://s3-us-west-2.amazonaws.com/agent-down-images/assets/spy_homepage_graphic.svg) no-repeat;

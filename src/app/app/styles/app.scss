@@ -1,6 +1,14 @@
+@mixin border-radius($radius) {
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+    -ms-border-radius: $radius;
+    border-radius: $radius;
+}
+
 @import 'components/agent-down-header.scss';
 @import 'components/agent-down-footer.scss';
 @import 'controllers/index.scss';
+
 
 * {
     margin: 0;
