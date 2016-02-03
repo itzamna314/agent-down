@@ -3,7 +3,8 @@ div.index {
     margin-left: 10px;
     margin-right: 10px;
     background: url(https://s3-us-west-2.amazonaws.com/agent-down-images/assets/welcome.svg) no-repeat;
-    background-size: contain;
+    background-size: 300px 240px;
+    background-position-x: 10%;
 
     div.index-push-top {
         height: 185px;
@@ -21,9 +22,9 @@ div.index {
             background: transparent;
             border: 1px solid silver;
             @include border-radius(5px);
-            background-color: light grey;
             font-weight: bold;
             width: 100%;
+            margin-top: 10px;
         }
     }
 
@@ -61,7 +62,7 @@ div.index {
         margin-left: auto;
         margin-right: auto;
         width: 50%;
-        height: 35%;
+        min-width: 200px;
         font-size: 60%;
         border: 1px solid grey;
         padding: 10px;
