@@ -5,13 +5,27 @@ export default Ember.Controller.extend({
     actions: {
         join (){
             this.get('gameState').initPlayer(this.store, this.get('nickname'))
-                .then(this.resolveGotPlayer, this.rejectGotPlayer);
+                .then(
+                    (player) => {
+                        this.resolveGotPlayer(player);
+                    }, 
+                    (message) => {
+                        this.rejectGotPlayer(message);
+                    }
+                );
         }
     },
-    resolveGotPlayer(/*player*/){
-    	this.get('gameState').joinGame(this.get('model')).then(this.resolveJoinedGame);
+    resolveGotPlayer: function(/*player*/){
+    	this.get('gameState').joinGame(this.get('model')).then(
+            (game) => {
+                this.resolveJoinedGame(game);
+            },
+            () => {
+                this.transitionToRoute('index');
+            }
+        );
     },
-    resolveJoinedGame(game){
+    resolveJoinedGame: function(game){
 		var sock = this.container.lookup('objects:gameSocket').create({gameId:game.get('id')});
 		var obj = {
             name: 'joined',
