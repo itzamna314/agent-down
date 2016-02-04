@@ -1,27 +1,12 @@
 import Ember from 'ember';
 
-// Returns in miles
-function dist(lat1, lon1, lat2, lon2) {
-    lat1 = toRadians(lat1);
-    lon1 = toRadians(lon1);
-    lat2 = toRadians(lat2);
-    lon2 = toRadians(lon2);
-    var dlon = lon2 - lon1;
-    var dlat = lat2 - lat1;
-    var a = Math.pow(Math.sin(dlat/2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon/2), 2);
-    var c = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1-a) );
-    return 3959 * c;
-}
-
-function toRadians(degrees) {
-    return degrees * Math.PI / 180;
-}
-
-var threshold = 1;
 
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
+    geoPosition: Ember.inject.service('geo-location'),
     socket: null,
+    coordinates: null,
+    nearbyGames: null,
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
@@ -37,19 +22,41 @@ export default Ember.Controller.extend({
             }
         );
 
+        this.get('geoPosition').getGeoPosition().then(
+            (pos) => {
+                this.set('coordinates', pos);
+                this.set('nearbyGames', this.get('model')
+                         .filter(
+                            (item) => {
+                                let lat = item.get('latitude');
+                                let lon = item.get('longitude');
+
+                                if ( !lat || !lon ) { return false; }
+
+                                return this.get('geoPosition').isNearby(pos, {latitude: lat, longitude: lon});
+                            }
+                         )
+                );
+            },
+            (reason) => {
+                alert('Could not acquire geo position.  Make sure location is enabled, or request an invite');
+                this.transitionToRoute('index');
+            }
+        );
+
         var sock = this.container.lookup('objects:joinSocket').create();
 
         sock.on('incomingGame', 
-                (joinData) => {
-                    var geoPos = this.get('model.geoPosition');
-                    var distance = dist(joinData.latitude, joinData.longitude, geoPos.latitude, geoPos.longitude);
+            (joinData) => {
+                var coords = this.get('coordinates'); 
+                if ( !coords ) {
+                    this.get('model').reload();
+                }
 
-                    console.log("Incoming game " + distance + " miles away");
-
-                    if (distance < threshold) {
-                        this.send('updateGames');
-                    }
-                 }
+                if (this.get('geoPosition').isNearby(joinData, geoPos) ) {
+                    this.get('model').reload();
+                }
+            }
         );
 
         this.set('socket', sock);
@@ -81,11 +88,7 @@ export default Ember.Controller.extend({
                 (obj) => {
                     if ( obj ) {
                         var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
-                        sock.writeSocket(obj.event).then(
-                            () => {
-                                console.log('done');
-                            }
-                        );
+                        sock.writeSocket(obj.event)
                     }
                 }
             );

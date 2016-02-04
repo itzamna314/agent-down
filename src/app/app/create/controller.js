@@ -1,22 +1,26 @@
 import Ember from 'ember';
-import GeoLocationMixin from 'agent-down/mixins/geolocation-mixin';
 
-export default Ember.Controller.extend(GeoLocationMixin, {
+export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
+    geoPosition: Ember.inject.service('geo-location'),
     socket: Ember.inject.service('game-socket'),
     init: function() {
         var gs = this.get('gameState');
 
         gs.reloadPlayer(
-            (playerId) => { return this.store.findRecord('player', playerId); }).then(
+            (playerId) => { return this.store.findRecord('player', playerId); })
+        .then(
                 () => {}, 
                 () => { this.transitionToRoute('index'); }
             );
 
-        gs.reloadGame((gameId) => { return this.store.findRecord('game', gameId); }).then(
+        gs.reloadGame(
+            (gameId) => { return this.store.findRecord('game', gameId); })
+        .then(
             (game) => {
                 var id = game.get('id');
-                var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
+                var sock = this.container.lookup('objects:gameSocket')
+                    .create({gameId: id});
 
                 sock.on('joined', this, () => {
                     console.log('joined');
@@ -106,25 +110,29 @@ export default Ember.Controller.extend(GeoLocationMixin, {
     },
     toggleGeoPosition: Ember.observer('useGeoPosition', function(){
         if (this.get('useGeoPosition') ) {
-            this.get('geolocation').start();
+            this.get('geoPosition').getGeoPosition().then(
+                (pos) => {
+                    var gameState = this.get('gameState');
+                    if (!gameState) {
+                        this.transitionToRoute('index');
+                    }
 
-            this.get('geolocation').getGeoposition().then(function(pos) {
-                var gameState = this.get('gameState');
-                if (!gameState) {
-                    this.transitionToRoute('index');
-                }
-
-                gameState.setGeoPosition(pos.coords).then(function(/*game*/){
-                    this.get('socket').writeSocket({
-                        name: "created",
-                        data: {
-                            latitude: pos.coords.latitude,
-                            longitude:  pos.coords.longitude
+                    gameState.setGeoPosition(pos).then(
+                        () => {
+                            this.get('socket').writeSocket({
+                                name: "created",
+                                data: {
+                                    latitude: pos.latitude,
+                                    longitude:  pos.longitude
+                                }
+                            });
                         }
-                    });
-                }.bind(this));
-
-            }.bind(this));
+                    );
+                },
+                (reason) => {
+                    alert('Failed to get geo position!  Please enable location or send invitations');
+                }
+            );
         }
     }),
     isCreator: Ember.computed('gameState.player', function(){

@@ -1,5 +1,11 @@
 <h1>Join</h1>
 
-{{joinable-game-list games=model.games action="joinGame"}}
+{{#if nearbyGames }}
+    {{joinable-game-list games=nearbyGames action="joinGame"}}
+{{else }}
+    <div>
+        <span>Waiting for location...</span>
+    </div>
+{{/if }}
 
 {{outlet}}
