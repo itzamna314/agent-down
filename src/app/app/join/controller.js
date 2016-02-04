@@ -53,7 +53,7 @@ export default Ember.Controller.extend({
                     this.get('model').reload();
                 }
 
-                if (this.get('geoPosition').isNearby(joinData, geoPos) ) {
+                if (this.get('geoPosition').isNearby(joinData, coords) ) {
                     this.get('model').reload();
                 }
             }
@@ -61,6 +61,10 @@ export default Ember.Controller.extend({
 
         this.set('socket', sock);
     },
+    gamesLoaded: Ember.computed('nearbyGames', function() {
+        var g = this.get('nearbyGames');
+        return g !== null && g !== undefined;
+    }),
     actions:{
         joinGame: function(game) {
             var gameState = this.get('gameState');

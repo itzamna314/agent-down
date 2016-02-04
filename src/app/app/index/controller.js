@@ -4,15 +4,29 @@ export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     actions: {
         create (){
-            var self = this;
-            this.get('gameState').newGame(this.store, this.get('nickname')).then(function(game){
-                self.transitionToRoute('create', game);
-            });
+            var nick = this.get('nickname');
+
+            if ( !nick ) {
+                alert('Please enter a codename');
+                return;
+            }
+
+            this.get('gameState').newGame(this.store, nick).then(
+                (game) => {
+                    this.transitionToRoute('create', game);
+                }
+            );
         },
         join (){
-            var self = this;
-            this.get('gameState').initPlayer(this.store, this.get('nickname')).then(function(){
-                self.transitionToRoute('join');
+            var nick = this.get('nickname');
+
+            if ( !nick ) {
+                alert('Please enter a codename');
+                return;
+            }
+
+            this.get('gameState').initPlayer(this.store, nick).then(function(){
+                this.transitionToRoute('join');
             });
         },
         reset (){
