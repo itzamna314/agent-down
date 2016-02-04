@@ -82,7 +82,10 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 		                     FROM game g
 							 JOIN gameStateType gst on gst.id = g.stateId
 		                     JOIN player cr on cr.gameId = g.id
-		                    WHERE g.stateId = ?`,
+		                    WHERE g.stateId = ?
+							  AND g.latitude is not null
+							  AND g.longitude is not null
+						      AND TIMESTAMPDIFF(HOUR, g.createdOn, CURRENT_TIMESTAMP) < 1`,
 		gameStateId[GameState(state)])
 
 	if err != nil {
