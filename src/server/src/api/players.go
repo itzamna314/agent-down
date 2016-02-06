@@ -115,6 +115,10 @@ func fetchPlayer(w http.ResponseWriter, r *http.Request, id int) {
 	player, err := dal.FetchPlayer(db, int64(id))
 
 	if err != nil {
+		if dbErr, ok := err.(dal.DbErr); ok && dbErr == dal.ERR_NotFound {
+			http.Error(w, fmt.Sprintf("Player not found: %d", id), 404)
+			return
+		}
 		http.Error(w, fmt.Sprintf("Failed to query db: %s", err), 500)
 		return
 	}

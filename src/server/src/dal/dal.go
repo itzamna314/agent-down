@@ -60,6 +60,21 @@ var victoryTypeId map[VictoryType]int = map[VictoryType]int{
 	VT_Default: 3,
 }
 
+type DbErr int
+
+const (
+	ERR_NotFound DbErr = iota
+)
+
+func (e DbErr) Error() string {
+	switch e {
+	case ERR_NotFound:
+		return "sql: Record not found"
+	default:
+		return "sql: An error occurred"
+	}
+}
+
 func Init(c *string) {
 	conn = *c
 }

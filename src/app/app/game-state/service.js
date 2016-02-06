@@ -183,10 +183,16 @@ export default Ember.Service.extend({
 
             var gameId = this.get('cache.gameId');
             if ( gameId ) {
-                gameGetter(gameId).then(function(game) {
-                    this.set('game', game);
-                    resolve(game);
-                }.bind(this));
+                gameGetter(gameId).then(
+                    (game) => {
+                        this.set('game', game);
+                        resolve(game);
+                    },
+                    (reason) => {
+                        this.set('cache.gameId', null);
+                        reject(reason);
+                    }
+                );
             }
             else {
                 reject('Could not find game');
@@ -196,17 +202,23 @@ export default Ember.Service.extend({
     reloadPlayer: function(playerGetter) {
         return new Ember.RSVP.Promise((resolve, reject) => {
             var p = this.get('player');
-            if ( this.get('player') ) {
+            if ( p ) {
                 resolve(p);
                 return;
             }
 
             var playerId = this.get('cache.playerId');
             if ( playerId ) {
-                playerGetter(playerId).then(function(player) {
-                    this.set('player', player);
-                    resolve(player);
-                }.bind(this));
+                playerGetter(playerId).then(
+                    (player) => {
+                        this.set('player', player);
+                        resolve(player);
+                    },
+                    (reason) => {
+                        this.set('cache.playerId', null);
+                        reject(reason);
+                    }
+                );
             }
             else {
                 reject();

@@ -199,8 +199,8 @@ func RemoveGame(db *sql.DB, id int64) error {
 
 	_, err = db.Exec(`DELETE p, a
 		                FROM player p
-		                JOIN game g on g.id = p.gameId
-		                JOIN accusation a on a.gameId = g.id
+		           LEFT JOIN game g on g.id = p.gameId
+		           LEFT JOIN accusation a on a.gameId = g.id
 		               WHERE g.id = ?`,
 		id)
 

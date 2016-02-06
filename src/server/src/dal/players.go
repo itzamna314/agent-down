@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
 
 func FindAllPlayers(db *sql.DB) ([]*Player, error) {
@@ -110,6 +111,11 @@ func FetchPlayer(db *sql.DB, id int64) (*Player, error) {
 	dto := newPlayerDto()
 	err := row.Scan(dto.id, dto.name, dto.gameId, dto.isSpy, dto.isCreator)
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil, ERR_NotFound
+		}
+
+		log.Printf("Error text: %s\n", err.Error())
 		return nil, err
 	}
 
