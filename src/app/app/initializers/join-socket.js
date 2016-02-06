@@ -6,7 +6,7 @@ function readJoinSocket(data) {
 
 function sendOnOpen(msg, sender, key/*, value, rev*/) {
     var sock = sender.get(key);
-    var sockErr = sender.get('socketErr')
+    var sockErr = sender.get('socketErr');
     if ( sock && !sockErr && sock.isOpen() ) {
         sock.send(msg);
     }

@@ -38,7 +38,7 @@ export default Ember.Controller.extend({
                          )
                 );
             },
-            (reason) => {
+            (/*reason*/) => {
                 alert('Could not acquire geo position.  Make sure location is enabled, or request an invite');
                 this.transitionToRoute('index');
             }
@@ -50,11 +50,11 @@ export default Ember.Controller.extend({
             (joinData) => {
                 var coords = this.get('coordinates'); 
                 if ( !coords ) {
-                    this.get('model').reload();
+                    this.reloadGames();
                 }
 
                 if (this.get('geoPosition').isNearby(joinData, coords) ) {
-                    this.get('model').reload();
+                    this.reloadGames();
                 }
             }
         );
@@ -65,6 +65,9 @@ export default Ember.Controller.extend({
         var g = this.get('nearbyGames');
         return g !== null && g !== undefined;
     }),
+    reloadGames () {
+        this.set('model', this.store.query('game', {'state':'awaitingPlayers'}));
+    },
     actions:{
         joinGame: function(game) {
             var gameState = this.get('gameState');
@@ -92,7 +95,7 @@ export default Ember.Controller.extend({
                 (obj) => {
                     if ( obj ) {
                         var sock = this.container.lookup('objects:gameSocket').create({gameId: obj.gameId});
-                        sock.writeSocket(obj.event)
+                        sock.writeSocket(obj.event);
                     }
                 }
             );

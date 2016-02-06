@@ -25,9 +25,11 @@ export default Ember.Controller.extend({
                 return;
             }
 
-            this.get('gameState').initPlayer(this.store, nick).then(function(){
-                this.transitionToRoute('join');
-            });
+            this.get('gameState').initPlayer(this.store, nick).then(
+                () => {
+                    this.transitionToRoute('join');
+                }
+            );
         },
         reset (){
             var gs = this.get('gameState');

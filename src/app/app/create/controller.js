@@ -129,7 +129,7 @@ export default Ember.Controller.extend({
                         }
                     );
                 },
-                (reason) => {
+                (/*reason*/) => {
                     alert('Failed to get geo position!  Please enable location or send invitations');
                 }
             );
