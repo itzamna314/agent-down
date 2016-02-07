@@ -6,7 +6,6 @@ export default Ember.Controller.extend({
     geoPosition: Ember.inject.service('geo-location'),
     socket: null,
     coordinates: null,
-    nearbyGames: null,
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
@@ -25,18 +24,6 @@ export default Ember.Controller.extend({
         this.get('geoPosition').getGeoPosition().then(
             (pos) => {
                 this.set('coordinates', pos);
-                this.set('nearbyGames', this.get('model')
-                         .filter(
-                            (item) => {
-                                let lat = item.get('latitude');
-                                let lon = item.get('longitude');
-
-                                if ( !lat || !lon ) { return false; }
-
-                                return this.get('geoPosition').isNearby(pos, {latitude: lat, longitude: lon});
-                            }
-                         )
-                );
             },
             (/*reason*/) => {
                 alert('Could not acquire geo position.  Make sure location is enabled, or request an invite');
@@ -48,25 +35,46 @@ export default Ember.Controller.extend({
 
         sock.on('incomingGame', 
             (joinData) => {
-                var coords = this.get('coordinates'); 
-                if ( !coords ) {
-                    this.reloadGames();
-                }
-
-                if (this.get('geoPosition').isNearby(joinData, coords) ) {
-                    this.reloadGames();
-                }
+                this.reloadGames();
             }
         );
 
         this.set('socket', sock);
     },
-    gamesLoaded: Ember.computed('nearbyGames', function() {
+    nearbyGames: Ember.computed('model', 'coordinates', function() {
+        var games = this.get('model');
+        var currentPosition = this.get('coordinates');
+        if ( !games || !currentPosition ) {
+            return null;
+        }
+        
+        return games.filter(
+            (item) => {
+                let lat = item.get('latitude');
+                let lon = item.get('longitude');
+
+                if ( !lat || !lon ) { return false; }
+
+                return this.get('geoPosition').isNearby(currentPosition, {
+                    latitude: lat,
+                    longitude: lon
+                });
+        }
+        )
+    }),
+    gamesLoaded: Ember.computed('model', 'coordinates', function() {
         var g = this.get('nearbyGames');
         return g !== null && g !== undefined;
     }),
     reloadGames () {
-        this.set('model', this.store.query('game', {'state':'awaitingPlayers'}));
+        this.store.query('game', {'state':'awaitingPlayers'}).then(
+            (games) => {
+                this.set('model', games);
+            },
+            (reason) => {
+                alert('failed to reload games: ' + reason);
+            }
+        );
     },
     actions:{
         joinGame: function(game) {
