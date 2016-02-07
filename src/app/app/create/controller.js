@@ -34,7 +34,7 @@ export default Ember.Controller.extend({
 
                 sock.on('kicked', this, (o) => {
                     console.log('kicked');
-                    if ( gs.get('player.id') === o.playerId ) {
+                    if ( gs.get('player.id') == o.playerId ) {
                         this.transitionToRoute('join');
                     }
                 });
@@ -100,7 +100,6 @@ export default Ember.Controller.extend({
                 (obj) => {
                     var sock = this.get('socket');
                     sock.writeSocket(obj.event);
-                    sock.kill();
                     this.transitionToRoute('join');
                 }, () => {
                     this.transitionToRoute('index');
