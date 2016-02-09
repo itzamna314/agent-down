@@ -105,6 +105,8 @@ export default Ember.Controller.extend({
             var gs = this.get('gameState');
             var sock = this.get('socket');
 
+            this.verifyState();
+
             gs.accuse(this.get('store'), player).then(
                 (accusation) => {
                     sock.writeSocket({
