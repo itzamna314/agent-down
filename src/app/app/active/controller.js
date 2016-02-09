@@ -22,6 +22,8 @@ export default Ember.Controller.extend({
             return this.store.findRecord('game', gameId);
         }).then(
             (game) => {
+                this.verifyState(game);
+
                 var id = game.get('id');
                 var sock = this.container.lookup('objects:gameSocket').create({gameId: id});
 
@@ -63,6 +65,38 @@ export default Ember.Controller.extend({
             (reason) => {
                 console.log('Error: ' + reason);
                 this.transitionToRoute('index');
+            }
+        );
+    },
+    verifyState(game) {
+        game = game || this.get('gameState.game');
+        if ( !game ) {
+            return;
+        }
+
+        game.reload().then(
+            (game) => {
+                var state = game.get('state');
+                
+                if ( state === 'voting' ) {
+                    var accusation = game.get('accusations')
+                        .reduce( 
+                            (accum, cur) => {
+                                if ( !accum ) { return cur; }
+                                
+                                var curId = parseInt(cur.get('id'));
+                                var accumId = parseInt(accum.get('id'));
+
+                                return curId < accumId ? accumId : curId;
+                            }
+                        );
+
+                    if ( accusation ) {
+                        this.transitionToRoute('vote', accusation);
+                    }
+                }
+            },
+            () => {
             }
         );
     },

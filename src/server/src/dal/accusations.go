@@ -135,6 +135,11 @@ func CreateAccusation(db *sql.DB, a *Accusation) (*Accusation, error) {
 
 	accusationGameState := GameState(gameState)
 
+	if accusationGameState != GS_InProgress && accusationGameState != GS_FinalReckoning {
+		tx.Rollback()
+		return nil, fmt.Errorf("Illegal game state: %s\n", gameState)
+	}
+
 	log.Printf("Accusation game state: %s\n", accusationGameState)
 
 	previousAccusationRow := tx.QueryRow(

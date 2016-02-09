@@ -3,6 +3,7 @@ package dal
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
@@ -147,16 +148,20 @@ func ReplacePlayer(db *sql.DB, id int64, p *Player) (*Player, error) {
 	if p.GameId != nil {
 		row := db.QueryRow(
 			`SELECT gst.name AS gameState
-		   FROM game g
-		   JOIN gameStateType gst on gst.id = g.stateId
-		  WHERE g.id=?`,
+		       FROM game g
+		       JOIN gameStateType gst on gst.id = g.stateId
+		      WHERE g.id=?`,
 			p.GameId)
 
 		var gameState string
 		err := row.Scan(&gameState)
 
-		if err != nil || GameState(gameState) != GS_Awaiting {
+		if err != nil {
 			return nil, err
+		}
+
+		if state := GameState(gameState); state != GS_Awaiting && state != GS_InProgress {
+			return nil, fmt.Errorf("Illegal game state: %s", gameState)
 		}
 	}
 

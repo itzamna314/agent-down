@@ -202,7 +202,7 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		return
 	}
 
-	log.Printf("Game State: %s\n", body.Game.State)
+	log.Printf("Game State: %s\n", *body.Game.State)
 
 	g, err := dal.ReplaceGame(db, int64(id), &body.Game)
 
