@@ -1,14 +1,15 @@
 div.header {
-    background-color: grey;
-    border: 1px solid black;
+    background-image: url('http://s3-us-west-2.amazonaws.com/agent-down-images/assets/header.svg');
+    background-color: white;
+    background-repeat: no-repeat;
+    height: 50px;
+    background-size: contain;
+    text-align: right;
 
+    p {
+        top: 25%;
+        position: relative;
+        margin-right: 25px;
+    }
 }
     
-div.header.top {
-    height: 15px;
-}
-
-div.header.bottom {
-    height: 35px;
-    margin-bottom: 10px;
-}

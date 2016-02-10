@@ -34,7 +34,7 @@ export default Ember.Controller.extend({
         var sock = this.container.lookup('objects:joinSocket').create();
 
         sock.on('incomingGame', 
-            (joinData) => {
+            (/*joinData*/) => {
                 this.reloadGames();
             }
         );
@@ -60,7 +60,7 @@ export default Ember.Controller.extend({
                     longitude: lon
                 });
         }
-        )
+        );
     }),
     gamesLoaded: Ember.computed('model', 'coordinates', function() {
         var g = this.get('nearbyGames');

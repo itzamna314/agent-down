@@ -1,6 +1,9 @@
-<div class="header top">
-</div>
-<div class="header bottom">
+<div class="header">
+    <p>
+    {{#if player}}
+        {{player.name}}
+    {{/if}}
+    </p>
 </div>
 
 {{yield}}

@@ -34,7 +34,7 @@ export default Ember.Controller.extend({
 
                 sock.on('kicked', this, (o) => {
                     console.log('kicked');
-                    if ( gs.get('player.id') == o.playerId ) {
+                    if ( parseInt(gs.get('player.id')) === o.playerId ) {
                         this.transitionToRoute('join');
                     }
                 });
