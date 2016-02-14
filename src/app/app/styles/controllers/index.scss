@@ -28,30 +28,55 @@ div.index {
         }
     }
 
+    .buttons-container {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     div.create-game,div.join-game {
         margin-top: 5px;
         display:inline-block;
+        width: 45%;
+
+        button {
+            width: 100%;
+            font-size: 3vw;
+        }
     }
 
     div.welcome-main {
-        position: fixed;
-        display: block;
+        position: absolute;
+        display: flex;
+        flex-direction: column;
         width: 95%;
         height: 50%;
         margin-top: 10px;
         margin-left: auto;
         margin-right: auto;
         background: url(http://s3-us-west-2.amazonaws.com/agent-down-images/assets/spy_homepage_graphic.svg) no-repeat;
-        background-size: contain;
+        background-size: cover;
         background-position-x: center;
     }
 
-    div.welcome-push {
-        height: 35%;
-        margin-bottom:1px;
+    div.welcome-push-top {
+        width: 100%;
+        flex-basis: 25%;
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+
+    div.welcome-push-bottom {
+        width: 100%;
+        flex-basis: 50%;
+        flex-grow: 1;
+        flex-shrink: 1;
     }
 
     div.welcome-intro {
+        flex-basis: 25%;
+        flex-grow: 1;
+        flex-shrink: 1;
         margin-left: auto;
         margin-right: auto;
         width: 50%;
@@ -59,12 +84,20 @@ div.index {
         font-size: 60%;
         border: 1px solid grey;
         padding: 10px;
-        background: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.75);
         box-shadow: 1px 1px 1px 1px rgba(200,200,200,0.75);
     }
 
     p.welcome-intro {
         position: relative;
+    }
+
+    button.view-rules {
+        margin-top: 5px;
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
     }
 }
 
