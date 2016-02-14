@@ -14,6 +14,7 @@
 @import 'components/allow-open.scss';
 @import 'controllers/index.scss';
 @import 'controllers/create.scss';
+@import 'controllers/guess-location.scss';
 
 * {
     margin: 0;
@@ -32,8 +33,11 @@ html {
 }
 
 .controller {
-    top: 0;
-    bottom: 0;
+    position: absolute;
+    top: 50px;
+    bottom: 60px;
+    left: 0;
+    right: 0;
 }
 
 
