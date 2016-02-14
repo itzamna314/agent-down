@@ -1,0 +1,11 @@
+{{#if notEnoughPlayers}}
+<div class="add-more-players">
+    <p class="num-to-add">
+        Add {{numMissing}}  more players!
+    </p>
+    <p class="fine-print">
+        (game requires 3+ players to start)
+    </p>
+</div>
+{{/if}}
+{{yield}}

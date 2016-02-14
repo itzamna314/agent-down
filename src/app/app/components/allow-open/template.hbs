@@ -1,6 +1,8 @@
-<div>
-    <span>Allow players to join by location?</span>
-    {{input type="checkbox" checked=useGeoPosition}}
+<div class="allow-open">
+    <p>
+    Use location
+    <button {{action 'click'}}>{{command}}</button>
+    </p>
 </div>
 
 {{yield}}

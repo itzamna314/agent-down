@@ -1,0 +1,62 @@
+.create {
+    margin-left: 25px;
+    margin-right: 25px;
+
+    .title {
+        background-image: url("http://s3-us-west-2.amazonaws.com/agent-down-images/assets/new_team_title.svg");
+        background-repeat: no-repeat;
+        height: 85px;
+    }
+
+    .joined-player-title {
+        font-size: 2em;
+        margin-top: 15px;
+    }
+
+    .joined-player-list {
+        margin-left: 10px; 
+    }
+
+    .creator-actions, .player-actions {
+        margin-top: 20px;
+    }
+
+    .creator-actions {
+        .choice {
+            font-size: 1.75em;
+        }
+
+        .choice-or {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            font-style: italic;
+            display: block;
+            width: 50%;
+            text-align: center;
+        }
+
+        .allow-open {
+            margin-left: 10px;
+            margin-top: 5px;
+        }
+
+        .invite-player {
+            margin-left: 10px;
+            margin-top: 5px;
+        }
+
+        .start-game {
+            margin-top: 25px;
+            background-color: #AAAAAA;
+        }
+
+        .start-game:disabled {
+            background-color: #EEEEEE;
+            text-color: #AAAAAA;
+        }
+    }
+}
+
+

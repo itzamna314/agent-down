@@ -1,9 +1,5 @@
-<button class="create-game" {{action 'click'}} disabled={{notEnoughPlayers}}>
-    {{#if notEnoughPlayers}}
-        Invite {{missingPlayers}} more players
-    {{else}}
-        Start
-    {{/if}}
+<button class="start-game" {{action 'click'}} disabled={{notEnoughPlayers}}>
+    Start
 </button>
 
 {{yield}}

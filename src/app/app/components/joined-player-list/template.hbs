@@ -1,11 +1,12 @@
-
-{{#each players as |p|}}
-    {{joined-player-list/joined-player player=p isCreator=isCreator action="kickPlayer"}}
-{{else}}
-    <div class="no-players">
-        <div class="icon"></div>
-        <p>No players have joined</p>
-    </div>
-{{/each}}
+<div class="joined-player-list">
+    {{#each players as |p|}}
+        {{joined-player-list/joined-player player=p isCreator=isCreator action="kickPlayer"}}
+    {{else}}
+        <div class="no-players">
+            <div class="icon"></div>
+            <p>No players have joined</p>
+        </div>
+    {{/each}}
+</div>
 
 {{yield}}

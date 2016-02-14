@@ -7,8 +7,13 @@
 
 @import 'components/agent-down-header.scss';
 @import 'components/agent-down-footer.scss';
+@import 'components/joined-player-list.scss';
+@import 'components/add-more-players.scss';
+@import 'components/invite-player.scss';
+@import 'components/start-game.scss';
+@import 'components/allow-open.scss';
 @import 'controllers/index.scss';
-
+@import 'controllers/create.scss';
 
 * {
     margin: 0;
@@ -17,6 +22,9 @@
 html, body {
     height: 100%;
     overflow: hidden;
+    font-family: Courier New, Serif;
+    color: #404040;
+    letter-spacing: 2px;
 }
 
 html {
@@ -26,6 +34,16 @@ html {
 .controller {
     top: 0;
     bottom: 0;
+}
+
+
+button, .button {
+    box-shadow: 1px 1px 1px 1px  grey;
+    @include border-radius(5px);
+    background: transparent;
+    border:0;
+    font-family: Courier New, Serif;
+    font-size: 1em;
 }
 
 

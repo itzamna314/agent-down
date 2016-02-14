@@ -1,20 +1,34 @@
-<h1>Create</h1>
+<div class="create">
+    <div class="title"></div>
 
-{{#if isCreator }}
-	{{allow-open useGeoPosition=useGeoPosition}}
-{{/if}}
+    <p class="joined-player-title">
+        Current Players
+    </p>
 
-{{joined-player-list players=model.players isCreator=isCreator action="kickPlayer"}}
+    {{joined-player-list players=model.players isCreator=isCreator action="kickPlayer"}}
 
-{{#if isCreator }}
-	<div>
-	    {{invite-player origin=origin fromName=gameState.player.name gameId=gameState.game.id}}
-	    {{start-game players=model.players action="startGame"}}
-	</div>
-{{else}}
-	<div>
-		{{back-button action="back"}}
-	</div>
-{{/if}}
+    {{add-more-players players=model.players}}
 
-{{outlet}}
+    {{#if isCreator }}
+        <div class="creator-actions">
+            <p class="choice">
+                You can either:
+            </p>
+            
+            {{allow-open allow=useGeoPosition action="toggleGeoPosition"}}
+
+            <p class="choice choice-or">
+                - or -
+            </p>
+
+            {{invite-player origin=origin fromName=gameState.player.name gameId=gameState.game.id}}
+            {{start-game players=model.players action="startGame"}}
+        </div>
+    {{else}}
+        <div class="player-actions">
+            {{back-button action="back"}}
+        </div>
+    {{/if}}
+
+    {{outlet}}
+</div>

@@ -3,6 +3,7 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     geoPosition: Ember.inject.service('geo-location'),
+    useGeoPosition: false,
     socket: Ember.inject.service('game-socket'),
     init: function() {
         var gs = this.get('gameState');
@@ -64,6 +65,36 @@ export default Ember.Controller.extend({
         );
     },
     actions: {
+        toggleGeoPosition: function(){
+            this.set('useGeoPosition', !this.get('useGeoPosition'));
+
+            if (this.get('useGeoPosition') ) {
+                this.get('geoPosition').getGeoPosition().then(
+                    (pos) => {
+                        var gameState = this.get('gameState');
+                        if (!gameState) {
+                            this.transitionToRoute('index');
+                        }
+
+                        gameState.setGeoPosition(pos).then(
+                            () => {
+                                this.get('socket').writeSocket({
+                                    name: "created",
+                                    data: {
+                                        latitude: pos.latitude,
+                                        longitude:  pos.longitude
+                                    }
+                                });
+                            }
+                        );
+                    },
+                    (/*reason*/) => {
+                        alert('Failed to get geo position!  Please enable location or send invitations');
+                        this.set('useGeoPosition', false);
+                    }
+                );
+            }
+        },
         startGame: function() {
             var gs = this.get('gameState');
             var sock = this.get('socket');
@@ -107,33 +138,6 @@ export default Ember.Controller.extend({
             );
         }
     },
-    toggleGeoPosition: Ember.observer('useGeoPosition', function(){
-        if (this.get('useGeoPosition') ) {
-            this.get('geoPosition').getGeoPosition().then(
-                (pos) => {
-                    var gameState = this.get('gameState');
-                    if (!gameState) {
-                        this.transitionToRoute('index');
-                    }
-
-                    gameState.setGeoPosition(pos).then(
-                        () => {
-                            this.get('socket').writeSocket({
-                                name: "created",
-                                data: {
-                                    latitude: pos.latitude,
-                                    longitude:  pos.longitude
-                                }
-                            });
-                        }
-                    );
-                },
-                (/*reason*/) => {
-                    alert('Failed to get geo position!  Please enable location or send invitations');
-                }
-            );
-        }
-    }),
     isCreator: Ember.computed('gameState.player', function(){
         return this.get('gameState.player.isCreator');
     }),

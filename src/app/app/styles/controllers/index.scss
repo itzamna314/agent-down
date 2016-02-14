@@ -8,7 +8,7 @@ div.index {
 
     div.index-push-top {
         height: 185px;
-        margin-top: -30px;
+        margin-top: -40px;
     }
 
     div.index-push-bottom {
@@ -31,13 +31,6 @@ div.index {
     div.create-game,div.join-game {
         margin-top: 5px;
         display:inline-block;
-    }
-
-    button {
-        box-shadow: 1px 1px 1px 1px  grey;
-        @include border-radius(5px);
-        background: transparent;
-        border:0;
     }
 
     div.welcome-main {
