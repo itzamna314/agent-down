@@ -1,8 +1,11 @@
 div.footer {
-    background-color: grey;
-    height: 35px; /* .push must be the same height as .footer */
+    background-image: url('http://s3-us-west-2.amazonaws.com/agent-down-images/assets/footer.svg');
+    height: 60px; /* .push must be the same height as .footer */
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
+    background-position: center right;
+    background-repeat: no-repeat;
+    background-size: contain;
 }
