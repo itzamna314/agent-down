@@ -79,16 +79,6 @@ func findVotes(w http.ResponseWriter, db *sql.DB, url *url.URL) {
 }
 
 func fetchVote(w http.ResponseWriter, db *sql.DB, id int) {
-	db, err := dal.Open()
-
-	if err != nil {
-		log.Printf("Failed to open db: %s\n", err)
-		http.Error(w, "Failed to connect to db", 500)
-		return
-	}
-
-	defer db.Close()
-
 	vote, err := dal.FetchVote(db, int64(id))
 
 	if err != nil {
