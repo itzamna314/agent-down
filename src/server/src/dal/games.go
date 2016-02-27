@@ -142,16 +142,52 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 	return games, nil
 }
 
-func ReplaceGame(db *sql.DB, id int64, g *Game) (*Game, error) {
+func SetGameState(db *sql.DB, id int64, g *Game) (*Game, error) {
+	res, err := db.Exec(`UPDATE game 
+	  	                    SET stateId = ?
+		                      , modifiedOn = CURRENT_TIMESTAMP
+		                      , modifiedBy = ?
+		                  WHERE id = ?`,
+		gameStateId[GameState(*g.State)], "dal:SetGameState()", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if num, _ := res.RowsAffected(); num == 0 {
+		return nil, errors.New("Game not found")
+	}
+
+	return FetchGame(db, id)
+}
+
+func SetGameLocation(db *sql.DB, id int64, g *Game) (*Game, error) {
 	res, err := db.Exec(`UPDATE game 
 	  	                    SET locationId = ?
-		                      , stateId = ?
-		                      , latitude = ?
+		                      , modifiedOn = CURRENT_TIMESTAMP
+		                      , modifiedBy = ?
+		                  WHERE id = ?`,
+		g.LocationId, "dal:SetGameLocation()", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if num, _ := res.RowsAffected(); num == 0 {
+		return nil, errors.New("Game not found")
+	}
+
+	return FetchGame(db, id)
+}
+
+func SetGameCoordinates(db *sql.DB, id int64, g *Game) (*Game, error) {
+	res, err := db.Exec(`UPDATE game 
+	  	                    SET latitude = ?
 		                      , longitude = ?
 		                      , modifiedOn = CURRENT_TIMESTAMP
 		                      , modifiedBy = ?
 		                  WHERE id = ?`,
-		g.LocationId, gameStateId[GameState(*g.State)], g.Latitude, g.Longitude, "dal:ReplaceGame()", id)
+		g.Latitude, g.Longitude, "dal:SetGameCoordinates()", id)
 
 	if err != nil {
 		return nil, err

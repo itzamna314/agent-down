@@ -204,7 +204,7 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 
 	log.Printf("Game State: %s\n", *body.Game.State)
 
-	g, err := dal.ReplaceGame(db, int64(id), &body.Game)
+	g, err := dal.SetGameState(db, int64(id), &body.Game)
 
 	if err != nil {
 		if err.Error() == "Game not found" {
@@ -215,6 +215,16 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 			http.Error(w, "Failed to replace game", 500)
 		}
 		return
+	}
+
+	if body.Game.Latitude != nil && body.Game.Longitude != nil {
+		g, err = dal.SetGameCoordinates(db, int64(id), &body.Game)
+
+		if err != nil {
+			log.Printf("Failed to set coordinates: %s\n", err)
+			http.Error(w, "Failed to set coordinats", 500)
+			return
+		}
 	}
 
 	if *g.State == "inProgress" && g.LocationId == nil {
@@ -241,7 +251,7 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		g.VictoryType = new(string)
 		*g.VictoryType = string(dal.VT_Guess)
 
-		log.Printf("Real location: %d, Guess: %d", g.LocationId, g.LocationGuessId)
+		log.Printf("Real location: %d, Guess: %d", *g.LocationId, *g.LocationGuessId)
 
 		if *g.LocationId == *body.Game.LocationGuessId {
 			*g.State = string(dal.GS_SpyWins)
@@ -297,17 +307,10 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 	}
 
 	idx := rand.Intn(len(locations))
-
-	log.Printf("Selected index %d\n", idx)
-
 	locId := int64(*locations[idx].Id)
-
-	log.Printf("Location id: %d\n", locId)
-
 	game.LocationId = &locId
 
 	idx = rand.Intn(len(game.PlayerIds))
-
 	sId, err := strconv.Atoi(game.PlayerIds[idx])
 
 	if err != nil {
@@ -316,11 +319,7 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 	}
 
 	spyId := int64(sId)
-
-	log.Printf("Spy id: %d\n", spyId)
-
 	game.Spy = &spyId
-
 	player, err := dal.FetchPlayer(db, spyId)
 
 	if err != nil || player == nil {
@@ -330,7 +329,6 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 
 	player.IsSpy = new(bool)
 	*player.IsSpy = true
-
 	_, err = dal.ReplacePlayer(db, int64(spyId), player)
 
 	if err != nil {
@@ -338,5 +336,5 @@ func selectSpyAndLocation(game *dal.Game, db *sql.DB) (*dal.Game, error) {
 		return nil, err
 	}
 
-	return dal.ReplaceGame(db, int64(*game.Id), game)
+	return dal.SetGameLocation(db, int64(*game.Id), game)
 }
