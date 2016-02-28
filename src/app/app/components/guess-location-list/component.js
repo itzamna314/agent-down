@@ -1,6 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+    classNames: ['guess-location-list'],
     sortedLocations: Ember.computed('locations', function() {
         var arr = this.get('locations');
 

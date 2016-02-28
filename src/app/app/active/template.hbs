@@ -1,9 +1,10 @@
-<h1>Active</h1>
+<div class="active-game">
+    {{game-time clock=clock}}
 
-{{game-time clock=clock}}
+    {{active-player-list players=gameState.game.players me=gameState.player gameState='inProgress' action="accuse"}}
 
-{{game-location location=gameState.game.location isSpy=gameState.player.isSpy viewLocations="viewLocations"}}
+    {{game-location location=gameState.game.location isSpy=gameState.player.isSpy viewLocations="viewLocations"}}
 
-{{active-player-list players=gameState.game.players me=gameState.player gameState='inProgress' action="accuse"}}
 
 {{outlet}}
+</div>

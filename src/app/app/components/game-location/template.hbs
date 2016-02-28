@@ -1,10 +1,10 @@
-
 {{#if isNotSpy }}
-	<span>{{location.name}}</span>
-	<img src={{location.image}} height="300" width="300"/>
+	<span class="title">{{location.name}}</span>
+    <div class="image-display" style="background-image: url({{location.image}})" /> 
 {{else}}
-	<span>You are the spy!</span>
-	<button class="guess-location" {{action 'click'}}>View locations</button>
+	<span class="title">You are the spy!</span>
 {{/if}}
+
+<button class="guess-location" {{action 'click'}}>View locations</button>
 
 {{yield}}

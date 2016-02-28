@@ -1,0 +1,54 @@
+.active-game {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    .game-time {
+        text-align: center;
+        font-size: 2.5em;
+    }
+
+    .active-player-list {
+        margin-left: 15px;
+    }
+
+    .active-player-list ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .active-player {
+        margin-top: 7px;
+    }
+
+    .game-location {
+        margin-top: 10px;
+        width: 100%;
+        height: 35%;
+
+        .title {
+            width: 100%;
+            text-align: center;
+            display: inline-block;
+            font-size: 2em;
+        }
+
+        .image-display {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .guess-location {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 10px;
+            font-size: 1.25em;
+        }
+    }
+}

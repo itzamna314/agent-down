@@ -36,6 +36,8 @@ export default Ember.Controller.extend({
                     console.log('kicked');
                     if ( parseInt(gs.get('player.id')) === o.playerId ) {
                         this.transitionToRoute('join');
+                    } else {
+                        this.get('model').reload();
                     }
                 });
 

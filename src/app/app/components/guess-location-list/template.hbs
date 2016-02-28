@@ -1,5 +1,5 @@
 {{#each sortedLocations as |l|}}
-    {{guess-location-list/guess-location location=l action="commitGuess"}}
+    {{guess-location-list/guess-location isSpy=isSpy location=l action="commitGuess"}}
 {{else}}
 	<p>Oh shit</p>
 {{/each}}

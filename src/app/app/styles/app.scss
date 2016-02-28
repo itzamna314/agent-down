@@ -10,14 +10,17 @@
 @import 'components/agent-down-footer.scss';
 @import 'components/allow-open.scss';
 @import 'components/collapsible-div.scss';
+@import 'components/guess-location-list.scss';
 @import 'components/invite-player.scss';
 @import 'components/joined-player-list.scss';
 @import 'components/start-game.scss';
 
+@import 'controllers/active.scss';
 @import 'controllers/create.scss';
 @import 'controllers/guess-location.scss';
 @import 'controllers/how-to-play.scss';
 @import 'controllers/index.scss';
+@import 'controllers/join.scss';
 @import 'controllers/results.scss';
 
 * {
@@ -44,6 +47,13 @@ html {
     right: 0;
 }
 
+.inner-controller {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
 
 button, .button {
     box-shadow: 1px 1px 1px 1px  grey;

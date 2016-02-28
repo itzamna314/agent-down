@@ -1,7 +1,8 @@
-{{#each players as |p|}}
-    {{active-player-list/active-player gameState=gameState player=p me=me action="accusePlayer"}}
-{{else}}
-	<p>Oh shit</p>
-{{/each}}
-
+<ul>
+    {{#each players as |p|}}
+        {{active-player-list/active-player gameState=gameState player=p me=me action="accusePlayer"}}
+    {{else}}
+        <p>Oh shit</p>
+    {{/each}}
+</ul>
 {{yield}}

@@ -1,9 +1,7 @@
-<div class="guess-location">
+<div class="guess-location inner-controller">
     {{game-time clock=clock}}
 
-    Guess a location!
-
-    {{guess-location-list locations=locations action='guess'}}
+    {{guess-location-list isSpy=gameState.player.isSpy locations=locations action='guess'}}
 
     {{outlet}}
 </div>

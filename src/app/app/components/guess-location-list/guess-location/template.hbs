@@ -1,10 +1,15 @@
-<div>
-    <div>
-        <span>{{location.name}}</span>
-        <button {{action 'click' location}}>Guess!</button>
-    </div>
-    <div>
-        <img src={{location.image}} height="300" width="300"/>
-    </div>
-</div>
+{{#if isSpy }}
+    {{#collapsible-div as |collapse|}}
+        {{#if collapse.isTitle }}
+            {{location.name}}
+        {{else if collapse.isContent}}
+            <button {{action 'click' location}}>Guess!</button>
+        {{/if}}
+    {{/collapsible-div}}
+{{else}}
+    <span class="location-title">
+        {{location.name}}
+    </span>
+{{/if}}
+<div class="location-image" style="background-image: url({{location.image}})"/>
 {{yield}}
