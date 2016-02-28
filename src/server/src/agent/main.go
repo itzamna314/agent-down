@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -43,7 +44,8 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		file := r.URL.Path[len("/"):]
-		if len(file) == 0 {
+		extIdx := strings.Index(r.URL.Path, ".")
+		if len(file) == 0 || extIdx == -1 {
 			http.ServeFile(w, r, "www/index.html")
 		} else {
 			http.ServeFile(w, r, fmt.Sprintf("www/%s", file))
