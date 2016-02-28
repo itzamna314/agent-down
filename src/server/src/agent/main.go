@@ -42,7 +42,12 @@ func main() {
 	go hub.Games.Run()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "www/index.html")
+		file := r.URL.Path[len("/"):]
+		if len(file) == 0 {
+			http.ServeFile(w, r, "www/index.html")
+		} else {
+			http.ServeFile(w, r, fmt.Sprintf("www/%s", file))
+		}
 	})
 
 	fs := http.FileServer(http.Dir("www"))
