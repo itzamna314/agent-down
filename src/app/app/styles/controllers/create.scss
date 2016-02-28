@@ -24,6 +24,7 @@
     .creator-actions {
         .choice {
             font-size: 1.75em;
+            margin-top: 15px;
         }
 
         .choice-or {
@@ -54,7 +55,7 @@
 
         .start-game:disabled {
             background-color: #EEEEEE;
-            text-color: #AAAAAA;
+            color: #AAAAAA;
         }
     }
 }

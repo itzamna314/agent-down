@@ -3,7 +3,6 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
     geoPosition: Ember.inject.service('geo-location'),
-    useGeoPosition: false,
     socket: Ember.inject.service('game-socket'),
     init: function() {
         var gs = this.get('gameState');
@@ -64,11 +63,19 @@ export default Ember.Controller.extend({
             }
         );
     },
+    useGeoPosition: Ember.computed(
+        'gameState', 
+        'gameState.game', 
+        'gameState.game.latitude', 
+        'gameState.game.longitude',
+        function() {
+            var g = this.get('gameState.game');
+            return g.get('latitude') && g.get('longitude');
+        }
+    ),
     actions: {
         toggleGeoPosition: function(){
-            this.set('useGeoPosition', !this.get('useGeoPosition'));
-
-            if (this.get('useGeoPosition') ) {
+            if (!this.get('useGeoPosition') ) {
                 this.get('geoPosition').getGeoPosition().then(
                     (pos) => {
                         var gameState = this.get('gameState');
@@ -93,6 +100,16 @@ export default Ember.Controller.extend({
                         this.set('useGeoPosition', false);
                     }
                 );
+            } else {
+                var g = this.get('gameState.game');
+
+                if (!g) {
+                    this.transitionToRoute('index');
+                }
+
+                g.set('latitude', null);
+                g.set('longitude', null);
+                g.save();
             }
         },
         startGame: function() {

@@ -217,7 +217,7 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		return
 	}
 
-	if body.Game.Latitude != nil && body.Game.Longitude != nil {
+	if *g.State == "awaitingPlayers" {
 		g, err = dal.SetGameCoordinates(db, int64(id), &body.Game)
 
 		if err != nil {
