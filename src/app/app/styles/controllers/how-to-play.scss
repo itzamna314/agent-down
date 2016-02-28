@@ -1,11 +1,12 @@
 div.how-to-play {
-    p {
-        margin-top: 5px;
-        margin-left: 15px;
+    .collapsible-div .title {
+        padding-top: 5px;
+        padding-left: 10px;
+        font-size: 2em;
     }
-    h4 {
-        margin-top: 5px;
-        margin-left: 10px;
+    .collapsible-div .content {
+        padding-top: 5px;
+        margin-left: 15px;
     }
     button {
         margin-top: 20px;

@@ -1,8 +1,21 @@
 <div class="allow-open">
-    <p>
-    Join by location
-    <button {{action 'click'}}>{{command}}</button>
-    </p>
+    {{#collapsible-div as |collapse|}}
+        {{#if collapse.isTitle }}
+        <span>
+            Join by location
+            <button {{action 'click' bubbles=false}}>{{command}}</button>
+            <i class="fa fa-question-circle"></i>
+        </span>
+        {{else if collapse.isContent }}
+            <p>
+            Makes your game visible to all players within a quarter-mile.
+            </p>
+            <p>
+            Requires that you and all players allow agent down 
+            to get your location
+            </p>
+        {{/if}}
+    {{/collapsible-div}}
 </div>
 
 {{yield}}

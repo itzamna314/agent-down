@@ -2,7 +2,7 @@
     margin-left: 25px;
     margin-right: 25px;
 
-    .title {
+    #title {
         background-image: url("http://s3-us-west-2.amazonaws.com/agent-down-images/assets/new_team_title.svg");
         background-repeat: no-repeat;
         height: 85px;
@@ -25,6 +25,15 @@
         .choice {
             font-size: 1.75em;
             margin-top: 15px;
+        }
+
+        .allow-open {
+            font-size: 1.25em;
+        }
+
+        .allow-open .content {
+            margin-top: 10px;
+            font-size: 0.5em;
         }
 
         .choice-or {
