@@ -112,7 +112,7 @@ type CreateData struct {
 	Longitude float64 `json:"longitude"`
 }
 
-type GameData struct {
+type PlayerData struct {
 	Command  string `json:"command"`
 	PlayerId int64  `json:"playerId"`
 }
@@ -162,7 +162,7 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 			return
 		}
 
-		d := GameData{
+		d := PlayerData{
 			Command:  command.Name,
 			PlayerId: *playerId,
 		}
@@ -172,7 +172,7 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 		}
 		//h.unregister <- c
 
-	case "abandoned", "started", "voted":
+	case "abandoned", "started", "voted", "guessed":
 		d := EmptyData{
 			Command: command.Name,
 		}

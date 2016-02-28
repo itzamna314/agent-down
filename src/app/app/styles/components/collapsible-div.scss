@@ -1,0 +1,20 @@
+div.collapsible-div.hide {
+    p {
+        display: none;
+    }
+    i.fa-arrow-down {
+        display: none;
+    }
+    i.fa-arrow-right {
+        display: inline;
+    }
+}
+
+div.collapsible-div {
+    i.fa-arrow-right {
+        display: none;
+    }
+    i.fa-arrow-down {
+        display: inline;
+    }
+}

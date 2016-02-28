@@ -14,6 +14,7 @@ Router.map(function() {
   this.route('invite-received', {path: '/invite-received/:game_id'});
   this.route('guess-location');
   this.route('final-reckoning', {path: '/final-reckoning/:game_id'});
+  this.route('how-to-play');
 });
 
 export default Router;

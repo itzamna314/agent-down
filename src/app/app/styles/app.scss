@@ -5,16 +5,20 @@
     border-radius: $radius;
 }
 
+@import 'components/add-more-players.scss';
 @import 'components/agent-down-header.scss';
 @import 'components/agent-down-footer.scss';
-@import 'components/joined-player-list.scss';
-@import 'components/add-more-players.scss';
-@import 'components/invite-player.scss';
-@import 'components/start-game.scss';
 @import 'components/allow-open.scss';
-@import 'controllers/index.scss';
+@import 'components/collapsible-div.scss';
+@import 'components/invite-player.scss';
+@import 'components/joined-player-list.scss';
+@import 'components/start-game.scss';
+
 @import 'controllers/create.scss';
 @import 'controllers/guess-location.scss';
+@import 'controllers/how-to-play.scss';
+@import 'controllers/index.scss';
+@import 'controllers/results.scss';
 
 * {
     margin: 0;

@@ -31,6 +31,9 @@ export default Ember.Controller.extend({
                 }
             );
         },
+        rules() {
+            this.transitionToRoute('how-to-play');
+        },
         reset (){
             var gs = this.get('gameState');
             gs.reset(true).then(obj => {
