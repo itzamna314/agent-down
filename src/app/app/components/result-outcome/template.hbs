@@ -1,18 +1,22 @@
 <div>
-    {{#if iWin }}
-        You Win!
-    {{ else }}
-        You Lose!
-    {{/if}}
+    <span class="winner">
+        {{#if iWin }}
+            You Win!
+        {{ else }}
+            You Lose!
+        {{/if}}
+    </span>
 </div>
 <div> 
-    {{#if wonByAccusation }}
-        <span>Players chose to accuse {{accusedName}}</span>
-    {{else if wonBySpyGuess }}
-        <span>Spy guessed {{locationGuess}}</span>
-    {{else}}
-        <span>Players failed to unanimously accuse anyone</span>
-    {{/if}}
+    <span class="method">
+        {{#if wonByAccusation }}
+            Players accused {{accusedName}}
+        {{else if wonBySpyGuess }}
+            Spy guessed {{locationGuess}}
+        {{else}}
+            Players could not reach consensus 
+        {{/if}}
+    </span>
 </div>
 
 {{yield}}

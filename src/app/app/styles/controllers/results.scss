@@ -1,7 +1,53 @@
-.play-again {
-    button {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+.game-results {
+    .result-outcome {
+        .winner {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .method {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font-size: 1.15em;
+        }
+    }
+
+    .result-location {
+        margin-top: 20px;
+        .result-location-image {
+            height: 250px;
+            width: 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+
+        .result-location-name {
+            margin-left: 15px;
+            .location-name {
+                font-weight: bold;
+            }
+        }
+      } 
+
+    .result-spy {
+        margin-top: 10px;
+        margin-left: 15px;
+        .spy-name {
+            font-weight: bold;
+         }
+     }
+     
+
+    .play-again {
+        button {
+            display: block;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     }
 }

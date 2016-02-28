@@ -1,10 +1,8 @@
 <div>
-  <h5>Location</h5>
-  <div>
-    <img src="{{location.image}}" height=200 width=200/> 
-  </div>
-  <div>
-    <span>{{location.name}}</span>
-  </div>
+    <span class="result-location-name">
+        The real location was: 
+        <span class="location-name">{{location.name}}</span>
+    </span>
 </div>
+<div class="result-location-image" style="background-image: url({{location.image}})" /> 
 {{yield}}

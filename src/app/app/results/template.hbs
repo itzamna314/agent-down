@@ -1,12 +1,12 @@
-<h1>Results</h1>
+<div class="game-results inner-controller">
+    {{result-outcome me=gameState.player game=gameState.game}}
 
-{{result-outcome me=gameState.player game=gameState.game}}
+    {{result-location location=gameState.game.location}}
 
-{{result-location location=gameState.game.location}}
+    {{result-spy spy=gameState.game.spy}}
 
-{{result-spy spy=gameState.game.spy}}
-
-<div class="play-again">
-    <button {{action "playAgain"}}>Play Again</button>
+    <div class="play-again">
+        <button {{action "playAgain"}}>Play Again</button>
+    </div>
+    {{outlet}}
 </div>
-{{outlet}}
