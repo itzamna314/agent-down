@@ -11,6 +11,10 @@ div.collapsible-div.hide {
 }
 
 div.collapsible-div {
+    a {
+        display: block;
+    }
+
     i.fa-arrow-right {
         display: none;
     }
