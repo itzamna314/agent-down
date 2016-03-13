@@ -43,6 +43,7 @@ create table if not exists location(
 	id int primary key not null auto_increment,
     name nvarchar(255) not null,
     imagePath nvarchar(255) null,
+    active bit not null default 1,
     createdOn datetime not null default CURRENT_TIMESTAMP,
     createdBy nvarchar(255) not null,
     modifiedOn datetime null,
