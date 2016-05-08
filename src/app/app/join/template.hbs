@@ -1,6 +1,10 @@
 <h1>Join</h1>
 
 <div class="join-game">
+    {{#if errorMsg}}
+        <span>{{errorMsg}}</span>
+    {{/if}} 
+    {{enter-join-code joinCode=joinCode action="joinGame"}}
 </div>
 
 {{outlet}}

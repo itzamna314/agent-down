@@ -51,7 +51,8 @@ module.exports = function(app) {
   gamesRouter.get('/', function(req, res) {
     res.send({
       'games': allGames.filter((function(g){
-          return !req.query.state || req.query.state == g.state;
+          return (!req.query.state || req.query.state == g.state) &&
+                 (!req.query.joinCode || req.query.joinCode == g.joinCode);
       }))
     });
   });
