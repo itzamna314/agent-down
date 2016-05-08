@@ -205,7 +205,6 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	log.Printf("Game State: %s\n", *body.Game.State)
 
 	g, err := dal.SetGameState(db, int64(id), &body.Game)
-
 	if err != nil {
 		if err.Error() == "Game not found" {
 			log.Printf("Game not found: %d\n", id)

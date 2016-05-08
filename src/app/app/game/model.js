@@ -9,9 +9,7 @@ var Game = DS.Model.extend({
     location: DS.belongsTo('location', {async: true, inverse:'games'}),
     locationGuess: DS.belongsTo('location', {async: true}),
     state: DS.attr('string'),
-    victoryType: DS.attr('string'),
-    latitude: DS.attr('number'),
-    longitude: DS.attr('number')
+    victoryType: DS.attr('string')
 });
 
 export default Game;

@@ -7,7 +7,8 @@ var Player = DS.Model.extend({
     accusationsMade: DS.hasMany('accusation', {async: true, inverse: 'accuser'}),
     accusationsAgainst: DS.hasMany('accusation', {async: true, inverse: 'accused'}),
     votes: DS.hasMany('vote', {async: true}),
-    game: DS.belongsTo('game', {async: true, inverse: 'players'})
+    game: DS.belongsTo('game', {async: true, inverse: 'players'}),
+    joinCode: DS.attr('string')
 });
 
 export default Player;

@@ -39,7 +39,6 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	go hub.Lobby.Run()
 	go hub.Games.Run()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +54,6 @@ func main() {
 	fs := http.FileServer(http.Dir("www"))
 	http.Handle("/assets/", fs)
 
-	http.HandleFunc("/ws/join", hub.ServeLobby)
 	http.HandleFunc("/ws/create/", hub.ServeGames)
 
 	http.HandleFunc("/api/games", addDefaultHeaders(api.ServeGames))
