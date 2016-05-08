@@ -3,9 +3,6 @@ import Ember from 'ember';
 
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
-    geoPosition: Ember.inject.service('geo-location'),
-    socket: null,
-    coordinates: null,
     init: function(){
         this._super.apply(this, arguments);
         var gs = this.get('gameState');
@@ -18,61 +15,6 @@ export default Ember.Controller.extend({
             () => {
                 this.transitionToRoute('index');
                 console.log('Failed to reload player');
-            }
-        );
-
-        this.get('geoPosition').getGeoPosition().then(
-            (pos) => {
-                this.set('coordinates', pos);
-            },
-            (/*reason*/) => {
-                alert('Could not acquire geo position.  Make sure location is enabled, or request an invite');
-                this.transitionToRoute('index');
-            }
-        );
-
-        var sock = this.container.lookup('objects:joinSocket').create();
-
-        sock.on('incomingGame', 
-            (/*joinData*/) => {
-                this.reloadGames();
-            }
-        );
-
-        this.set('socket', sock);
-    },
-    nearbyGames: Ember.computed('model', 'coordinates', function() {
-        var games = this.get('model');
-        var currentPosition = this.get('coordinates');
-        if ( !games || !currentPosition ) {
-            return null;
-        }
-        
-        return games.filter(
-            (item) => {
-                let lat = item.get('latitude');
-                let lon = item.get('longitude');
-
-                if ( !lat || !lon ) { return false; }
-
-                return this.get('geoPosition').isNearby(currentPosition, {
-                    latitude: lat,
-                    longitude: lon
-                });
-        }
-        );
-    }),
-    gamesLoaded: Ember.computed('model', 'coordinates', function() {
-        var g = this.get('nearbyGames');
-        return g !== null && g !== undefined;
-    }),
-    reloadGames () {
-        this.store.query('game', {'state':'awaitingPlayers'}).then(
-            (games) => {
-                this.set('model', games);
-            },
-            (reason) => {
-                alert('failed to reload games: ' + reason);
             }
         );
     },

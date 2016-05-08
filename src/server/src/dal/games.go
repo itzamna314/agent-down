@@ -34,8 +34,6 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 							 , g.locationGuessId
 		                     , gst.name as state
 		                     , vt.name as victoryType
-		                     , g.latitude
-		                     , g.longitude
 		                     , cr.id as creatorId
 		                     , spy.id as spyId
 		                  FROM game g 
@@ -45,7 +43,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 		             LEFT JOIN player spy on spy.gameId = g.id and spy.isSpy = 1
 		                 WHERE g.id = ?`,
 		id)
-	err := row.Scan(g.id, g.locationId, g.locationGuessId, g.state, g.victoryType, g.latitude, g.longitude, g.creatorId, g.spyId)
+	err := row.Scan(g.id, g.locationId, g.locationGuessId, g.state, g.victoryType, g.creatorId, g.spyId)
 	if err != nil {
 		return nil, err
 	}
@@ -76,16 +74,12 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
 		                        , gst.name as state
-		                        , g.latitude
-		                        , g.longitude
 		                        , cr.id as creatorId
 		                     FROM game g
 							 JOIN gameStateType gst on gst.id = g.stateId
 		                     JOIN player cr on cr.gameId = g.id
 		                    WHERE g.stateId = ?
 							  AND cr.isCreator = 1
-							  AND g.latitude is not null
-							  AND g.longitude is not null
 						      AND TIMESTAMPDIFF(HOUR, g.createdOn, CURRENT_TIMESTAMP) < 1`,
 		gameStateId[GameState(state)])
 
@@ -100,7 +94,7 @@ func FindGames(db *sql.DB, state string) ([]*Game, error) {
 	for rows.Next() {
 		g := newGameDto()
 
-		err := rows.Scan(g.id, g.locationId, g.state, g.latitude, g.longitude, g.creatorId)
+		err := rows.Scan(g.id, g.locationId, g.state, g.creatorId)
 		if err != nil {
 			return nil, err
 		}
@@ -115,8 +109,6 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 	rows, err := db.Query(`SELECT g.id
 		                        , g.locationId
 		                        , gst.name as state
-		                        , g.latitude
-		                        , g.longitude
 		                        , cr.id as creatorId
 		                     FROM game g
 							 JOIN gameStateType gst on gst.id = g.stateId
@@ -131,7 +123,7 @@ func FindAllGames(db *sql.DB) ([]*Game, error) {
 
 	for rows.Next() {
 		g := newGameDto()
-		err := rows.Scan(g.id, g.locationId, g.state, g.latitude, g.longitude, g.creatorId)
+		err := rows.Scan(g.id, g.locationId, g.state, g.creatorId)
 		if err != nil {
 			return nil, err
 		}
@@ -168,26 +160,6 @@ func SetGameLocation(db *sql.DB, id int64, g *Game) (*Game, error) {
 		                      , modifiedBy = ?
 		                  WHERE id = ?`,
 		g.LocationId, "dal:SetGameLocation()", id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if num, _ := res.RowsAffected(); num == 0 {
-		return nil, errors.New("Game not found")
-	}
-
-	return FetchGame(db, id)
-}
-
-func SetGameCoordinates(db *sql.DB, id int64, g *Game) (*Game, error) {
-	res, err := db.Exec(`UPDATE game 
-	  	                    SET latitude = ?
-		                      , longitude = ?
-		                      , modifiedOn = CURRENT_TIMESTAMP
-		                      , modifiedBy = ?
-		                  WHERE id = ?`,
-		g.Latitude, g.Longitude, "dal:SetGameCoordinates()", id)
 
 	if err != nil {
 		return nil, err

@@ -217,16 +217,6 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 		return
 	}
 
-	if *g.State == "awaitingPlayers" {
-		g, err = dal.SetGameCoordinates(db, int64(id), &body.Game)
-
-		if err != nil {
-			log.Printf("Failed to set coordinates: %s\n", err)
-			http.Error(w, "Failed to set coordinats", 500)
-			return
-		}
-	}
-
 	if *g.State == "inProgress" && g.LocationId == nil {
 		g, err = selectSpyAndLocation(g, db)
 

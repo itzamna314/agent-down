@@ -2,7 +2,6 @@ import Ember from 'ember';
 
 export default Ember.Controller.extend({
     gameState: Ember.inject.service('game-state'),
-    geoPosition: Ember.inject.service('geo-location'),
     socket: Ember.inject.service('game-socket'),
     init: function() {
         var gs = this.get('gameState');
