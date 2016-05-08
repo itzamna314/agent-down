@@ -12,7 +12,7 @@
             {{start-game players=model.players action="startGame"}}
         
             <p class="choice">
-                You can use:
+                Invite players by:
             </p>
             
             {{allow-open allow=useGeoPosition action="toggleGeoPosition"}}
@@ -21,7 +21,7 @@
                 - or -
             </p>
 
-            {{invite-player origin=origin fromName=gameState.player.name gameId=gameState.game.id}}
+            {{display-join-code game=model}}
         </div>
     {{else}}
         <div class="player-actions">
