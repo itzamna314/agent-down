@@ -11,17 +11,7 @@
         <div class="creator-actions">
             {{start-game players=model.players action="startGame"}}
         
-            <p class="choice">
-                You can use:
-            </p>
-            
-            {{allow-open allow=useGeoPosition action="toggleGeoPosition"}}
-
-            <p class="choice choice-or">
-                - or -
-            </p>
-
-            {{invite-player origin=origin fromName=gameState.player.name gameId=gameState.game.id}}
+            {{display-join-code game=model}}
         </div>
     {{else}}
         <div class="player-actions">

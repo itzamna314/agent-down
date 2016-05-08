@@ -9,7 +9,7 @@ export default Ember.Component.extend({
     }),
     buttonText: Ember.computed('players', function() {
         if ( this.get('notEnoughPlayers') ) {
-            var plural = this.get('missingPlayers') == 1 ? 'player' : 'players';
+            var plural = this.get('missingPlayers') === 1 ? 'player' : 'players';
 
             return `Add ${this.get('missingPlayers')} more ${plural}`;
         }

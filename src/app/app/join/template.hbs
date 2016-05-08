@@ -1,13 +1,10 @@
 <h1>Join</h1>
 
 <div class="join-game">
-    {{#if gamesLoaded }}
-        {{joinable-game-list games=nearbyGames action="joinGame"}}
-    {{else }}
-        <div class="waiting">
-            <span>Waiting for location...</span>
-        </div>
-    {{/if }}
+    {{#if errorMsg}}
+        <span>{{errorMsg}}</span>
+    {{/if}} 
+    {{enter-join-code joinCode=joinCode action="joinGame"}}
 </div>
 
 {{outlet}}

@@ -57,7 +57,7 @@ export default Ember.Controller.extend({
                     }
                 });
 
-                sock.on('guessed', o => {
+                sock.on('guessed', () => {
                     alert('Location guessed');
                     this.transitionToRoute('results', this.get('gameState.game'));
                 });

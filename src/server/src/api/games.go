@@ -205,7 +205,6 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 	log.Printf("Game State: %s\n", *body.Game.State)
 
 	g, err := dal.SetGameState(db, int64(id), &body.Game)
-
 	if err != nil {
 		if err.Error() == "Game not found" {
 			log.Printf("Game not found: %d\n", id)
@@ -215,16 +214,6 @@ func replaceGame(w http.ResponseWriter, db *sql.DB, b []byte, id int) {
 			http.Error(w, "Failed to replace game", 500)
 		}
 		return
-	}
-
-	if *g.State == "awaitingPlayers" {
-		g, err = dal.SetGameCoordinates(db, int64(id), &body.Game)
-
-		if err != nil {
-			log.Printf("Failed to set coordinates: %s\n", err)
-			http.Error(w, "Failed to set coordinats", 500)
-			return
-		}
 	}
 
 	if *g.State == "inProgress" && g.LocationId == nil {

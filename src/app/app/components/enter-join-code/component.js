@@ -1,9 +1,10 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+    classNames: ['enter-join-code'],
     actions: {
-        joinGame(game){
-            this.sendAction('action', game);
+        click() {
+            this.sendAction('action');
         }
     }
 });

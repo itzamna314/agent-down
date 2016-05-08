@@ -1,0 +1,20 @@
+<div class="display-join-code">
+    {{#collapsible-div as |collapse|}}
+    {{#if collapse.isTitle}}
+    <span>
+        Secret Code: {{game.joinCode}}
+        <i class="fa fa-question-circle"></i>
+    </span>
+    {{else if collapse.isContent}}
+        <p> 
+        Players can enter this code on the join game screen.
+        </p>
+        <p>
+        They will be placed directly into your game, and will not need to provide
+        their location
+        </p>
+    {{/if}}
+    {{/collapsible-div}}
+</div>
+
+{{yield}}

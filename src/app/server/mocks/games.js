@@ -9,6 +9,7 @@ module.exports = function(app) {
       spy: 2,
       createdOn: '2015-08-30',
       state: 'active',
+      joinCode: 'abcdef',
       location: 1,
       locationGuess: null,
       latitude: 47.6183360,
@@ -23,6 +24,7 @@ module.exports = function(app) {
       spy: null,
       createdOn: '2015-08-31',
       state: 'awaitingPlayers',
+      joinCode: '54321',
       location: null,
       locationGuess: null,
       latitude: 47.6183360,
@@ -36,6 +38,7 @@ module.exports = function(app) {
       spy: 6,
       createdOn: '2016-01-19',
       state: 'playersWin',
+      joinCode: '12345',
       location: 2,
       locationGuess: null,
       latitude: 47.6,
@@ -48,7 +51,8 @@ module.exports = function(app) {
   gamesRouter.get('/', function(req, res) {
     res.send({
       'games': allGames.filter((function(g){
-          return !req.query.state || req.query.state == g.state;
+          return (!req.query.state || req.query.state == g.state) &&
+                 (!req.query.joinCode || req.query.joinCode == g.joinCode);
       }))
     });
   });

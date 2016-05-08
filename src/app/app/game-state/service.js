@@ -42,13 +42,6 @@ export default Ember.Service.extend({
             }.bind(this));
         }.bind(this));
     },
-    setGeoPosition: function(coordinates){
-        var game = this.get('game');
-        game.set('latitude', coordinates.latitude);
-        game.set('longitude', coordinates.longitude);
-
-        return game.save();
-    },
     initPlayer: function(store, playerName) {
         return new Ember.RSVP.Promise(function(resolve, reject){
             store.createRecord('player', {
@@ -78,7 +71,7 @@ export default Ember.Service.extend({
         }.bind(this));
     },
     joinGame: function(game) {
-        return new Ember.RSVP.Promise(function(resolve, reject) {
+        return new Ember.RSVP.Promise((resolve, reject) => {
             if ( this.player == null || game == null) {
                 reject();
             }
@@ -86,10 +79,8 @@ export default Ember.Service.extend({
             this.set('game', game);
 
             this.player.set('game', game);
-            this.player.save().then(function(/*player*/){
-                resolve(game);
-            }.bind(this));
-        }.bind(this));
+            this.player.save().then((/*player*/) => resolve(game));
+        });
     },
     startGame: function() {
         var game = this.get('game');

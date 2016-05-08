@@ -107,11 +107,6 @@ type GameCommand struct {
 	Data map[string]interface{}
 }
 
-type CreateData struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-}
-
 type PlayerData struct {
 	Command  string `json:"command"`
 	PlayerId int64  `json:"playerId"`
@@ -147,13 +142,6 @@ func (h *gamesHub) handle(c *connection, msg []byte, t int) {
 	}
 
 	switch command.Name {
-	case "created":
-		d := CreateData{
-			Latitude:  command.Data["latitude"].(float64),
-			Longitude: command.Data["longitude"].(float64),
-		}
-		h.handleCreated(&d)
-
 	case "left", "kicked", "nominated", "joined":
 		playerId, err := h.parsePlayerId(command)
 
@@ -244,13 +232,4 @@ func (h *gamesHub) broadcastGameMessage(d interface{}, gameId int) error {
 	h.broadcast <- &msg
 
 	return nil
-}
-
-// Broadcast to join hub
-func (h *gamesHub) handleCreated(data *CreateData) {
-	if b, err := json.Marshal(data); err == nil {
-		Lobby.h.broadcast <- b
-	} else {
-		log.Println(err)
-	}
 }
