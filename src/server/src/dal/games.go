@@ -6,11 +6,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
+	"math/rand"
 )
 
 func CreateGame(db *sql.DB, g *Game) (*Game, error) {
+	
+	joinCode := rand.Intn(1<<40-1)
 	result, err := db.Exec(
-		"INSERT INTO game(createdBy) VALUES (?)",
+		"INSERT INTO game(joinCode,createdBy) VALUES (?,?)",
+		&joinCode,
 		"dal:CreateGame()",
 	)
 
@@ -34,6 +38,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 							 , g.locationGuessId
 		                     , gst.name as state
 		                     , vt.name as victoryType
+		                     , g.joinCode
 		                     , cr.id as creatorId
 		                     , spy.id as spyId
 		                  FROM game g 
@@ -43,7 +48,7 @@ func FetchGame(db *sql.DB, id int64) (*Game, error) {
 		             LEFT JOIN player spy on spy.gameId = g.id and spy.isSpy = 1
 		                 WHERE g.id = ?`,
 		id)
-	err := row.Scan(g.id, g.locationId, g.locationGuessId, g.state, g.victoryType, g.creatorId, g.spyId)
+	err := row.Scan(g.id, g.locationId, g.locationGuessId, g.state, g.victoryType, g.joinCode, g.creatorId, g.spyId)
 	if err != nil {
 		return nil, err
 	}
