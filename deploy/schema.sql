@@ -56,6 +56,7 @@ create table if not exists game(
     locationGuessId int null, FOREIGN KEY (locationGuessId) references location (id),
     stateId int not null default 1, FOREIGN KEY (stateId) references gameStateType (id),
     victoryTypeId int null, FOREIGN KEY (victoryTypeId) references victoryType(id),
+    joinCode nvarchar(16) not null,
     secondsRemaining int not null default 480,
     clockStartTime datetime not null default CURRENT_TIMESTAMP,
     clockIsRunning boolean not null default false,
