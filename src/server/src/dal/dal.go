@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+	"math/rand"
 )
 
 var conn string
@@ -139,3 +140,24 @@ func IntsToStrings(i []int64) (ret []string) {
 	}
 	return
 }
+
+
+func intToAlphaNum(i int) (ret string){
+	switch {
+	case i<10:
+		return string(rune(i+48))
+	default:
+		return string(rune(i+55))
+	}
+}
+
+
+func GenAlphaNum(i int) (ret string){
+	joinCode := intToAlphaNum(rand.Intn(36))
+	for x := 1; x <i ; x++ {
+		joinCode += intToAlphaNum(rand.Intn(36))
+	}
+	return joinCode
+}
+
+

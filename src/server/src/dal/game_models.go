@@ -10,7 +10,7 @@ type Game struct {
 	LocationGuessId *int64   `json:"locationGuess,string"`
 	State           *string  `json:"state"`
 	VictoryType     *string  `json:"victoryType"`
-	JoinCode   		*int	 `json:"joinCode,string"`
+	JoinCode   		*string	 `json:"joinCode"`
 	Creator         *int64   `json:"creator,string"`
 	Spy             *int64   `json:"spy,string"`
 	PlayerIds       []string `json:"players"`
@@ -23,7 +23,7 @@ type gameDto struct {
 	locationGuessId *sql.NullInt64
 	state           *string
 	victoryType     *sql.NullString
-	joinCode   		*int
+	joinCode   		*string
 	creatorId       *sql.NullInt64
 	spyId           *sql.NullInt64
 	playerIds       []int64
@@ -37,7 +37,7 @@ func newGameDto() *gameDto {
 		locationGuessId: new(sql.NullInt64),
 		state:           new(string),
 		victoryType:     new(sql.NullString),
-		joinCode:		 new(int),
+		joinCode:		 new(string),
 		creatorId:       new(sql.NullInt64),
 		spyId:           new(sql.NullInt64),
 		playerIds:       nil,

@@ -6,12 +6,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
-	"math/rand"
+	
 )
 
 func CreateGame(db *sql.DB, g *Game) (*Game, error) {
+
+	joinCode := GenAlphaNum(5)
 	
-	joinCode := rand.Intn(1<<40-1)
+	
 	result, err := db.Exec(
 		"INSERT INTO game(joinCode,createdBy) VALUES (?,?)",
 		&joinCode,
