@@ -26,6 +26,7 @@ module.exports = function(environment) {
     // ENV.APP.LOG_TRANSITIONS = true;
     // ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
     // ENV.APP.LOG_VIEW_LOOKUPS = true;
+    ENV.APP.WS_HOST = 'ws://localhost:8080/ws/';
   }
 
   if (environment === 'test') {
@@ -41,7 +42,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-
+	  ENV.APP.WS_HOST = 'ws://agentdown.com/ws';
   }
 
   return ENV;
