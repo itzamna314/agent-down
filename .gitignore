@@ -1,5 +1,3 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
 # compiled output
 /src/app/dist
 /src/app/tmp
@@ -20,15 +18,12 @@ testem.log
 /src/server/bin
 /src/server/pkg
 
+# deploy things
+/deploy
+
 # IntelliJ
 .idea
 *.iml
-
-# Keys
-*.pem
-
-# Deploy script
-Makefile
 
 # Vim
 *.swp
