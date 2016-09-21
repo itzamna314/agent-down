@@ -1,22 +1,22 @@
 # compiled output
-/src/app/dist
-/src/app/tmp
+/src/browser/dist
+/src/browser/tmp
 
 # dependencies
-/src/app/node_modules
-/src/app/bower_components
+/src/browser/node_modules
+/src/browser/bower_components
 
 # misc
-/src/app/.sass-cache
-/src/app/connect.lock
-/src/app/coverage/*
-/src/app/libpeerconnection.log
+/src/browser/.sass-cache
+/src/browser/connect.lock
+/src/browser/coverage/*
+/src/browser/libpeerconnection.log
 npm-debug.log
 testem.log
 
 # go
-/src/server/bin
-/src/server/pkg
+/src/golang/bin
+/src/golang/pkg
 
 # deploy things
 /deploy
